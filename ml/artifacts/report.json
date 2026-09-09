@@ -1,0 +1,260 @@
+{
+  "version": "context-nb-v1",
+  "dataset_sha256": "5c33a904544bc848a2213d47c190f5ef426fe162d118e0665b2f77a835f323b6",
+  "scope": "Synthetic context classification only; not real-vacancy or entity-extraction quality.",
+  "train_count": 60,
+  "test_count": 24,
+  "baseline_name": "Every mention is required (no context analysis)",
+  "baseline": {
+    "accuracy": 0.3333333333333333,
+    "macro_f1": 0.16666666666666666,
+    "per_class": {
+      "required": {
+        "precision": 0.3333333333333333,
+        "recall": 1.0,
+        "f1": 0.5,
+        "support": 8
+      },
+      "optional": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 8
+      },
+      "not_required": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "support": 8
+      }
+    },
+    "confusion_matrix": {
+      "required": {
+        "required": 8,
+        "optional": 0,
+        "not_required": 0
+      },
+      "optional": {
+        "required": 8,
+        "optional": 0,
+        "not_required": 0
+      },
+      "not_required": {
+        "required": 8,
+        "optional": 0,
+        "not_required": 0
+      }
+    }
+  },
+  "model": {
+    "accuracy": 0.625,
+    "macro_f1": 0.5835137085137085,
+    "per_class": {
+      "required": {
+        "precision": 0.6666666666666666,
+        "recall": 0.25,
+        "f1": 0.36363636363636365,
+        "support": 8
+      },
+      "optional": {
+        "precision": 0.625,
+        "recall": 0.625,
+        "f1": 0.625,
+        "support": 8
+      },
+      "not_required": {
+        "precision": 0.6153846153846154,
+        "recall": 1.0,
+        "f1": 0.761904761904762,
+        "support": 8
+      }
+    },
+    "confusion_matrix": {
+      "required": {
+        "required": 2,
+        "optional": 3,
+        "not_required": 3
+      },
+      "optional": {
+        "required": 1,
+        "optional": 5,
+        "not_required": 2
+      },
+      "not_required": {
+        "required": 0,
+        "optional": 0,
+        "not_required": 8
+      }
+    }
+  },
+  "predictions": [
+    {
+      "id": "test-required-01",
+      "text": "Для работы в нашей команде обязательно знать React.",
+      "skill": "React",
+      "expected": "required",
+      "predicted": "required"
+    },
+    {
+      "id": "test-required-02",
+      "text": "Ждём кандидата, который уверенно применяет Docker в коммерческих проектах.",
+      "skill": "Docker",
+      "expected": "required",
+      "predicted": "not_required"
+    },
+    {
+      "id": "test-required-03",
+      "text": "Без практических навыков TypeScript выполнять задачи не получится.",
+      "skill": "TypeScript",
+      "expected": "required",
+      "predicted": "not_required"
+    },
+    {
+      "id": "test-required-04",
+      "text": "При найме проверяем обязательное владение Python.",
+      "skill": "Python",
+      "expected": "required",
+      "predicted": "optional"
+    },
+    {
+      "id": "test-required-05",
+      "text": "Вы будете ежедневно разрабатывать на PostgreSQL, нужен опыт.",
+      "skill": "PostgreSQL",
+      "expected": "required",
+      "predicted": "required"
+    },
+    {
+      "id": "test-required-06",
+      "text": "Вакансия требует глубоких знаний Go.",
+      "skill": "Go",
+      "expected": "required",
+      "predicted": "not_required"
+    },
+    {
+      "id": "test-required-07",
+      "text": "Умение пользоваться Redis — необходимое условие.",
+      "skill": "Redis",
+      "expected": "required",
+      "predicted": "optional"
+    },
+    {
+      "id": "test-required-08",
+      "text": "Основная обязанность: поддерживать сервисы с использованием Kubernetes.",
+      "skill": "Kubernetes",
+      "expected": "required",
+      "predicted": "optional"
+    },
+    {
+      "id": "test-optional-01",
+      "text": "Круто, если есть опыт Kubernetes, но можно прийти без него.",
+      "skill": "Kubernetes",
+      "expected": "optional",
+      "predicted": "optional"
+    },
+    {
+      "id": "test-optional-02",
+      "text": "Приятным дополнением будет знакомство с Git.",
+      "skill": "Git",
+      "expected": "optional",
+      "predicted": "optional"
+    },
+    {
+      "id": "test-optional-03",
+      "text": "Знание FastAPI даст преимущество, обязательным не считаем.",
+      "skill": "FastAPI",
+      "expected": "optional",
+      "predicted": "not_required"
+    },
+    {
+      "id": "test-optional-04",
+      "text": "Готовы помочь освоить JavaScript; предыдущий опыт желателен.",
+      "skill": "JavaScript",
+      "expected": "optional",
+      "predicted": "optional"
+    },
+    {
+      "id": "test-optional-05",
+      "text": "Помимо основного стека приветствуем Vue.",
+      "skill": "Vue",
+      "expected": "optional",
+      "predicted": "optional"
+    },
+    {
+      "id": "test-optional-06",
+      "text": "Если знаете SQL, это дополнительный плюс к отклику.",
+      "skill": "SQL",
+      "expected": "optional",
+      "predicted": "optional"
+    },
+    {
+      "id": "test-optional-07",
+      "text": "Навык PyTorch пригодится в перспективе, сейчас он необязателен.",
+      "skill": "PyTorch",
+      "expected": "optional",
+      "predicted": "not_required"
+    },
+    {
+      "id": "test-optional-08",
+      "text": "Пожелание команды — опыт Node.js, обсудим и кандидатов без него.",
+      "skill": "Node.js",
+      "expected": "optional",
+      "predicted": "required"
+    },
+    {
+      "id": "test-not_required-01",
+      "text": "От соискателя не требуется владение Node.js.",
+      "skill": "Node.js",
+      "expected": "not_required",
+      "predicted": "not_required"
+    },
+    {
+      "id": "test-not_required-02",
+      "text": "Система больше не использует Java, изучать его не нужно.",
+      "skill": "Java",
+      "expected": "not_required",
+      "predicted": "not_required"
+    },
+    {
+      "id": "test-not_required-03",
+      "text": "Пожалуйста, не ориентируйтесь на старое требование GraphQL: оно удалено.",
+      "skill": "GraphQL",
+      "expected": "not_required",
+      "predicted": "not_required"
+    },
+    {
+      "id": "test-not_required-04",
+      "text": "Владение Linux для текущих задач не понадобится.",
+      "skill": "Linux",
+      "expected": "not_required",
+      "predicted": "not_required"
+    },
+    {
+      "id": "test-not_required-05",
+      "text": "Мы не проверяем C++, в проекте его нет.",
+      "skill": "C++",
+      "expected": "not_required",
+      "predicted": "not_required"
+    },
+    {
+      "id": "test-not_required-06",
+      "text": "Указанный ранее опыт TensorFlow не нужен на этой позиции.",
+      "skill": "TensorFlow",
+      "expected": "not_required",
+      "predicted": "not_required"
+    },
+    {
+      "id": "test-not_required-07",
+      "text": "В обязанности работа с React не входит.",
+      "skill": "React",
+      "expected": "not_required",
+      "predicted": "not_required"
+    },
+    {
+      "id": "test-not_required-08",
+      "text": "Команда не предъявляет требований к знанию Docker.",
+      "skill": "Docker",
+      "expected": "not_required",
+      "predicted": "not_required"
+    }
+  ]
+}

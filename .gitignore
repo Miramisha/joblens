@@ -39,3 +39,7 @@ next-env.d.ts
 
 # TypeScript cache
 *.tsbuildinfo
+
+# Python cache
+__pycache__/
+*.py[cod]
