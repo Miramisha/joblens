@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { SkillSuggestions } from '@/components/joblens/skill-suggestions';
 import {
   Search,
   Plus,
@@ -903,6 +904,12 @@ export default function Workspace({ signedIn }: { signedIn: boolean }) {
                   placeholder="Вставь текст вакансии: задачи, требования, условия"
                 />
               </label>
+              <SkillSuggestions
+                key={`${editing?.id ?? 'new'}-${open}`}
+                description={form.description}
+                skills={skillText}
+                onApply={setSkillText}
+              />
               <label>
                 Мои заметки
                 <textarea

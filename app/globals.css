@@ -949,3 +949,88 @@ h1 > span {
     font-size: 26px;
   }
 }
+.skill-suggestions {
+  border: 1px solid #dce5f6;
+  border-radius: 10px;
+  background: #f6f8fd;
+  padding: 16px;
+}
+.suggestions-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+.suggestions-heading h3 {
+  margin: 0 0 5px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #263b5c;
+}
+.suggestions-heading p,
+.suggestions-help {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #62738f;
+}
+.suggestions-heading button {
+  flex-shrink: 0;
+}
+.skill-suggestions .suggestions-help {
+  display: block;
+  margin-top: 12px;
+}
+.suggestion-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  max-height: 270px;
+  overflow-y: auto;
+}
+.form-fields .suggestion-item {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
+  background: white;
+  padding: 11px;
+  border: 1px solid #e1e7f2;
+  border-radius: 7px;
+  cursor: pointer;
+}
+.suggestion-item [data-slot='checkbox'] {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+.suggestion-item strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+}
+.suggestion-item small {
+  display: block;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #74829a;
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+}
+.suggestions-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+}
+.skill-suggestions .error {
+  margin: 12px 0 0;
+}
+@media (max-width: 600px) {
+  .suggestions-heading {
+    flex-direction: column;
+  }
+  .suggestions-actions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
