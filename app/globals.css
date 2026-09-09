@@ -128,18 +128,11 @@ textarea:focus-visible {
   text-decoration: none;
   color: #18253f;
 }
-.brand-dot {
-  color: #2459e0;
-  margin-left: -10px;
-}
 .brand-icon {
-  background: #2459e0;
-  color: white;
-  display: grid;
-  place-items: center;
-  width: 37px;
-  height: 37px;
-  border-radius: 10px;
+  display: block;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
 }
 .top-label {
   font-size: 12px;
@@ -220,6 +213,13 @@ h1 > span {
 .stat {
   padding: 23px 26px;
   position: relative;
+}
+/* Share title, value and caption tracks across each row of metric cards. */
+.stats[aria-label='Статистика поиска'] > .stat {
+  display: grid;
+  grid-row: span 3;
+  grid-template-rows: subgrid;
+  row-gap: 0;
 }
 .stat + .stat {
   border-left: 1px solid var(--border);

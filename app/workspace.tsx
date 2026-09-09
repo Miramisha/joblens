@@ -4,7 +4,6 @@ import Link from 'next/link';
 import {
   Search,
   Plus,
-  ScanLine,
   BriefcaseBusiness,
   LayoutGrid,
   ChartNoAxesCombined,
@@ -381,10 +380,19 @@ export default function Workspace({ signedIn }: { signedIn: boolean }) {
     <main className="workspace">
       <header className="topbar">
         <Link className="brand" href="/">
-          <span className="brand-icon">
-            <ScanLine size={23} />
-          </span>
-          joblens<span className="brand-dot">.</span>
+          <svg
+            className="brand-icon"
+            viewBox="0 0 48 48"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M7 12H23V28C23 35.2 18.2 40 11 40H5V32H11C13.7 32 15 30.7 15 28V20H7V12Z"
+              fill="#2459e0"
+            />
+            <path d="M29 7L33 10L37 7V30H45V38H29V7Z" fill="#18253f" />
+          </svg>
+          joblens
         </Link>
         <span className="top-label">ТВОЯ КАРЬЕРА. ТВОЙ ПЛАН.</span>
         <div className="account">
