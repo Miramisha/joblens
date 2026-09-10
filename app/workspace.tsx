@@ -399,19 +399,15 @@ export default function Workspace({ signedIn }: { signedIn: boolean }) {
         <div className="account">
           {signedIn ? (
             <>
-              <span className="private-label">Личное пространство</span>
+              <Link className="text-button" href="/account">
+                Мой аккаунт
+              </Link>
               <span className="avatar">JL</span>
             </>
           ) : (
-            // SIWC requires top-level navigation; framework links may prefetch.
-            // oxlint-disable-next-line next/no-html-link-for-pages
-            <a
-              className="secondary"
-              href="/signin-with-chatgpt?return_to=%2F"
-              target="_top"
-            >
-              Войти и сохранять
-            </a>
+            <Link className="secondary" href="/account">
+              Войти / Регистрация
+            </Link>
           )}
         </div>
       </header>
