@@ -1,4 +1,4 @@
-import { getChatGPTUser } from '@/app/chatgpt-auth';
+import { getUser } from '@/app/auth';
 import { getDb } from '@/db';
 import { getHHSettings } from '@/lib/hh/runtime';
 import { exchangeCode, currentProfile, HHError } from '@/lib/hh/client';
@@ -23,7 +23,7 @@ export async function GET(request: Request) {
       },
     });
   if (!config) return finish('not_configured');
-  const user = await getChatGPTUser();
+  const user = await getUser();
   if (!user) return finish('login_required');
   const state = url.searchParams.get('state');
   if (

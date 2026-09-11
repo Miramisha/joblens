@@ -1,9 +1,9 @@
 import { smallJson } from '@/lib/request-body';
-import { getChatGPTUser } from '@/app/chatgpt-auth';
+import { getUser } from '@/app/auth';
 import { getDb } from '@/db';
 import { sameOrigin } from '@/lib/hh/security';
 export async function POST(request: Request) {
-  const user = await getChatGPTUser();
+  const user = await getUser();
   if (!user)
     return Response.json(
       { error: 'Сначала войдите в JobLens.' },

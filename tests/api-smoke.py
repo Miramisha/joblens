@@ -1,14 +1,16 @@
-"""Run only against the LOCAL built Worker on localhost:3001: python3 tests/api-smoke.py.
-Identity headers are injected here to exercise the local Worker. Hosted ingress
-must strip visitor-supplied identity headers and provide authenticated identity.
-"""
+"""Run against the local Worker using the isolated test database."""
+from local_auth import session, database
 import json
 import urllib.request
 import urllib.error
 BASE='http://localhost:3001'
+with database() as db:
+    for owner in ['joblens-test-a','joblens-test-b']:
+        db.execute('INSERT OR IGNORE INTO accounts(owner_id,display_name,created_at) VALUES (?,?,?)',(owner,owner,'test'))
+sessions={owner:session(owner) for owner in ['joblens-test-a','joblens-test-b']}
 def request(method, payload=None, owner='joblens-test-a', origin=BASE):
     headers={'Content-Type':'application/json'}
-    if owner: headers.update({'oai-authenticated-user-id':owner,'oai-authenticated-user-email':owner+'@example.test'})
+    if owner: headers.update({'Cookie':sessions[owner]})
     if origin: headers['Origin']=origin
     req=urllib.request.Request(BASE+'/api/jobs',data=json.dumps(payload).encode() if payload is not None else None,headers=headers,method=method)
     try:

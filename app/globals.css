@@ -1210,3 +1210,49 @@ h1 > span {
     margin-top: 32px;
   }
 }
+
+.email-login-form {
+  display: grid;
+  gap: 20px;
+  width: 100%;
+}
+.email-login-form label {
+  display: grid;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text, #1c273d);
+}
+.email-login-form input[type='email'] {
+  width: 100%;
+  min-width: 0;
+  padding: 13px 14px;
+  border: 1px solid #dce3ef;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 16px;
+  background: white;
+}
+.email-login-form input:focus-visible {
+  outline: 2px solid #2455e8;
+  outline-offset: 2px;
+}
+.email-code-slot {
+  width: clamp(32px, 10vw, 42px);
+  height: 50px;
+  font-size: 22px;
+  border-color: #dce3ef;
+}
+.email-login-actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.login-email {
+  overflow-wrap: anywhere;
+}
+.email-login-form button:disabled,
+.email-login-actions button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

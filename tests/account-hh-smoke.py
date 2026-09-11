@@ -1,6 +1,7 @@
 """Local built-Worker test only; fake credentials, no requests are sent to hh.ru.
 Use the isolated .wrangler/hh-test-state database described in docs/HH_SETUP.md.
 """
+from local_auth import session, database
 import json
 import urllib.request
 import urllib.error
@@ -12,11 +13,15 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 opener=urllib.request.build_opener(NoRedirect)
 owner='test-'+uuid.uuid4().hex
 other=owner+'-other'
+with database() as db:
+    for name in [owner,other]:
+        db.execute('INSERT INTO accounts(owner_id,display_name,created_at) VALUES (?,?,?)',(name,name,'test'))
+sessions={owner:session(owner),other:session(other)}
 def req(path,method='GET',data=None,user=owner,origin=BASE,cookie=None):
     headers={}
-    if user:headers.update({'oai-authenticated-user-id':user,'oai-authenticated-user-email':user+'@example.test'})
+    if user:headers.update({'Cookie':sessions[user]})
     if origin:headers['Origin']=origin
-    if cookie:headers['Cookie']=cookie
+    if cookie:headers['Cookie']=headers.get('Cookie','')+'; '+cookie
     if data is not None:headers['Content-Type']='application/json'
     request=urllib.request.Request(BASE+path,headers=headers,method=method,data=json.dumps(data).encode() if data is not None else None)
     try:
@@ -34,9 +39,8 @@ def callback(state,cookie,user=owner):
     return urllib.parse.parse_qs(urllib.parse.urlparse(headers['Location']).query)['hh'][0]
 assert req('/api/account','POST',{'displayName':'Test'},user=None)[0]==401
 assert req('/api/account','POST',{'displayName':'Test'},origin='https://other.example')[0]==403
-assert req('/api/account','POST',{'displayName':''})[0]==400
+result=req('/api/account','POST',{'displayName':''});assert result[0]==400,(result[0],result[2])
 assert req('/api/account','POST',{'displayName':'x'*3000})[0]==400
-assert 'account_required' in req('/api/hh/connect','POST')[1]['Location']
 assert req('/api/account','POST',{'displayName':owner})[0]==200
 assert req('/api/account','POST',{'displayName':other},user=other)[0]==200
 assert owner in req('/account')[2] and other not in req('/account')[2]

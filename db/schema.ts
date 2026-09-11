@@ -33,3 +33,32 @@ export const hhOauthStates = sqliteTable('hh_oauth_states', {
   encryptedVerifier: text('encrypted_verifier').notNull(),
   expiresAt: integer('expires_at').notNull(),
 });
+
+export const emailIdentities = sqliteTable('email_identities', {
+  email: text('email').primaryKey(),
+  ownerId: text('owner_id').notNull().unique(),
+  verifiedAt: integer('verified_at').notNull(),
+});
+export const authSessions = sqliteTable(
+  'auth_sessions',
+  {
+    tokenHash: text('token_hash').primaryKey(),
+    ownerId: text('owner_id').notNull(),
+    expiresAt: integer('expires_at').notNull(),
+  },
+  (t) => [index('idx_auth_sessions_expiry').on(t.expiresAt)],
+);
+export const emailChallenges = sqliteTable('email_challenges', {
+  email: text('email').primaryKey(),
+  challengeHash: text('challenge_hash').notNull().unique(),
+  codeHash: text('code_hash').notNull(),
+  expiresAt: integer('expires_at').notNull(),
+  sentAt: integer('sent_at').notNull(),
+  attempts: integer('attempts').notNull().default(0),
+  consumed: integer('consumed').notNull().default(0),
+});
+export const authLimits = sqliteTable('auth_limits', {
+  bucket: text('bucket').primaryKey(),
+  count: integer('count').notNull(),
+  resetsAt: integer('resets_at').notNull(),
+});

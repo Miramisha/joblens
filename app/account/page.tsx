@@ -1,9 +1,7 @@
 import Link from 'next/link';
-import {
-  getChatGPTUser,
-  chatGPTSignInPath,
-  chatGPTSignOutPath,
-} from '@/app/chatgpt-auth';
+import { getUser } from '@/app/auth';
+import { getAuthSettings } from '@/lib/auth/runtime';
+import EmailLogin from './email-login';
 import { getDb } from '@/db';
 import { getHHSettings } from '@/lib/hh/runtime';
 import AccountPanel from './panel';
@@ -32,7 +30,7 @@ export default async function Account({
   // This dynamic Server Component computes expiry once per HTTP request.
   // oxlint-disable-next-line react/react-compiler
   const checkedAt = Math.floor(Date.now() / 1000);
-  const user = await getChatGPTUser();
+  const user = await getUser();
   const params = await searchParams;
   if (!user)
     return (
@@ -40,25 +38,7 @@ export default async function Account({
         <Link className="account-back" href="/">
           JobLens
         </Link>
-        <section className="account-card login-card">
-          <p className="eyebrow">ЛИЧНОЕ ПРОСТРАНСТВО</p>
-          <h1>Твой аккаунт JobLens</h1>
-          <p>
-            Войди через ChatGPT, создай профиль и подключи hh.ru. Вакансии и
-            подключения будут доступны только тебе.
-          </p>
-          <a
-            className="primary"
-            href={chatGPTSignInPath('/account')}
-            target="_top"
-          >
-            Войти или зарегистрироваться через ChatGPT
-          </a>
-          <small>Пароль от ChatGPT или hh.ru не передаётся JobLens.</small>
-          <Link className="text-button" href="/">
-            Посмотреть демо
-          </Link>
-        </section>
+        <EmailLogin configured={!!getAuthSettings()} />
       </main>
     );
   let account: null | { display_name: string; created_at: string } = null,
@@ -97,9 +77,9 @@ export default async function Account({
         <Link className="account-back" href="/">
           JobLens
         </Link>
-        <a className="text-button" href={chatGPTSignOutPath('/')} target="_top">
-          Выйти
-        </a>
+        <form action="/api/auth/logout" method="post">
+          <button className="text-button">Выйти</button>
+        </form>
       </div>
       <p className="eyebrow">ЛИЧНОЕ ПРОСТРАНСТВО</p>
       <h1>Профиль и подключения</h1>

@@ -2,8 +2,8 @@
 
 ## Реализовано
 
-- `/account`: вход через ChatGPT, создание профиля JobLens, изменение отображаемого имени, выход и управление подключением hh.ru.
-- Идентификатор владельца задаётся сервером из проверенной платформенной сессии Sites. Регистрация по email/паролю не реализована: способ входа сохранён из существующей архитектуры.
+- `/account`: вход по коду из письма, создание профиля JobLens, изменение отображаемого имени, выход и управление подключением hh.ru.
+- Идентификатор владельца задаётся сервером из проверенной email-сессии JobLens. Настройка почты: [EMAIL_AUTH_SETUP.md](EMAIL_AUTH_SETUP.md).
 - Каждому владельцу соответствует отдельная запись аккаунта и отдельное подключение hh.ru. Один hh-профиль нельзя привязать к двум аккаунтам JobLens.
 - OAuth Authorization Code с PKCE S256, случайным state, одноразовым использованием и сроком 10 минут. State связан с владельцем и HttpOnly/SameSite=Lax cookie, в HTTPS используется Secure.
 - Токены и PKCE verifier шифруются AES-256-GCM. Owner ID используется как additional authenticated data: перенос шифротекста другому владельцу не даёт доступа.
@@ -26,7 +26,7 @@
 5. Для production задайте те же значения в защищённых переменных Sites. Secret: `HH_CLIENT_SECRET`, `TOKEN_ENCRYPTION_KEY`. Обычные значения: `HH_CLIENT_ID`, `HH_REDIRECT_URI`, `HH_USER_AGENT`. User-Agent должен включать название приложения и действующий контакт владельца.
 6. Примените миграцию `drizzle/0001_fantastic_hawkeye.sql` после первой миграции проекта. В текущей локальной базе она уже применена. Production-миграции применяются через сохранение и публикацию версии Sites.
 7. Опубликуйте приложение с нужной политикой доступа. Сейчас Site приватный и не опубликован; публичный доступ не включался. Коммит и публикация требуют отдельного согласия владельца проекта.
-8. Войдите в JobLens через ChatGPT, создайте профиль и нажмите «Подключить hh.ru». На странице hh.ru подтвердите доступ.
+8. Войдите в JobLens по коду из письма и нажмите «Подключить hh.ru». На странице hh.ru подтвердите доступ.
 
 Смена ключа шифрования без перешифрования данных потребует переподключения всех пользователей. Храните ключ отдельно от базы и резервных копий.
 
@@ -34,21 +34,6 @@
 
 `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build` проверяют сборку и код. Unit-тесты используют фиктивные ответы провайдера для code exchange и `/me`; тестируется также PKCE по RFC-вектору, подмена владельца и шифротекста.
 
-Для интеграционного smoke-теста используйте изолированную базу:
-
-```
-pnpm exec wrangler d1 execute DB --local --config wrangler.local.json --persist-to .wrangler/hh-test-state --file drizzle/0000_conscious_hammerhead.sql
-pnpm exec wrangler d1 execute DB --local --config wrangler.local.json --persist-to .wrangler/hh-test-state --file drizzle/0001_fantastic_hawkeye.sql
-```
-
-После `pnpm build` запустите Worker с фиктивными переменными (в отдельном терминале):
-
-```
-pnpm exec wrangler dev --config dist/server/wrangler.json --port 3001 --persist-to .wrangler/hh-test-state --var HH_CLIENT_ID:test-client --var HH_CLIENT_SECRET:test-secret --var HH_REDIRECT_URI:http://localhost:3001/api/hh/callback --var HH_USER_AGENT:JobLens-test --var TOKEN_ENCRYPTION_KEY:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-```
-
-Ключ из команды состоит из нулевых байтов и допустим **только для этого изолированного теста**. Никогда не используйте его для пользовательских данных. Выполните `python3 tests/account-hh-smoke.py`. Тест не следует внешним redirect и не отправляет запросы на hh.ru; проверяет регистрацию, изоляцию пользователей, state, cookie, отмену, replay и отключение. Тестовые аккаунты остаются только в `.wrangler/hh-test-state`, которая игнорируется Git.
-
-Для ограниченной macOS-среды применяются переменные Wrangler из основного README. Identity-заголовки для тестов допустимы лишь у локального Worker. Production должен работать за доверенным Sites ingress; прямое публичное размещение Worker без него небезопасно.
+Интеграционные проверки и запуск изолированного Worker описаны в [EMAIL_AUTH_SETUP.md](EMAIL_AUTH_SETUP.md). `tests/account-hh-smoke.py` использует сессии в отдельной тестовой базе, не следует внешним redirect и не отправляет запросов в hh.ru.
 
 Источники: https://api.hh.ru/openapi/specification/public (OAuth, PKCE, `/token`, `/me`), https://dev.hh.ru/.

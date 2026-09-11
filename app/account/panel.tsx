@@ -86,7 +86,7 @@ export default function AccountPanel({
           <div className="account-email">
             <span>Аккаунт для входа</span>
             <strong>{email}</strong>
-            <small>Вход через ChatGPT</small>
+            <small>Почта подтверждена</small>
           </div>
           {error && (
             <p className="error" role="alert">

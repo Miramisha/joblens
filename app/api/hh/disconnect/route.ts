@@ -1,10 +1,10 @@
-import { getChatGPTUser } from '@/app/chatgpt-auth';
+import { getUser } from '@/app/auth';
 import { getDb } from '@/db';
 import { sameOrigin, decrypt } from '@/lib/hh/security';
 import { getHHSettings } from '@/lib/hh/runtime';
 import { revokeToken, type HHTokens } from '@/lib/hh/client';
 export async function POST(request: Request) {
-  const user = await getChatGPTUser();
+  const user = await getUser();
   if (!user) return new Response('Войдите в JobLens.', { status: 401 });
   if (!sameOrigin(request))
     return new Response('Недопустимый источник запроса.', { status: 403 });

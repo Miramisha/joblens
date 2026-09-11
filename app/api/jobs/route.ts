@@ -1,4 +1,4 @@
-import { getChatGPTUser } from '@/app/chatgpt-auth';
+import { getUser } from '@/app/auth';
 import { getDb } from '@/db';
 import { validateJob, type Job } from '@/lib/jobs';
 const json = (data: unknown, status = 200) =>
@@ -11,7 +11,7 @@ async function run(
   write: boolean,
   action: (owner: string) => Promise<Response>,
 ) {
-  const user = await getChatGPTUser();
+  const user = await getUser();
   if (!user)
     return json(
       { error: 'Войдите, чтобы работать с личными вакансиями.' },
