@@ -27,18 +27,33 @@ assert request('POST',{**input,'url':'javascript:alert(1)'})[0]==400
 status,data=request('POST',input);assert status==201,(status,data)
 job=data['job']
 try:
+    assert job['nextActionDate']=='' and job['nextAction']==''
+    # Persist an old payload to check compatibility with pre-planning cards.
+    legacy={k:v for k,v in job.items() if k not in ('nextActionDate','nextAction')}
+    with database() as db:
+        db.execute('UPDATE jobs SET payload=? WHERE id=? AND owner_id=?',(json.dumps(legacy),job['id'],'joblens-test-a'))
+    loaded=next(j for j in request('GET')[1]['jobs'] if j['id']==job['id'])
+    assert loaded['nextActionDate']=='' and loaded['nextAction']==''
     assert any(j['id']==job['id'] for j in request('GET')[1]['jobs'])
     assert all(j['id']!=job['id'] for j in request('GET',owner='joblens-test-b')[1]['jobs'])
     assert request('PUT',job,owner='joblens-test-b')[0]==404
     assert request('DELETE',job,owner='joblens-test-b')[0]==409
-    status,data=request('PUT',{**job,'stage':'interview','notes':'Interview booked'})
+    assert request('PUT',{**job,'nextActionDate':'2026-02-30'})[0]==400
+    status,data=request('PUT',{**job,'stage':'interview','notes':'Interview booked','nextActionDate':'2026-09-15','nextAction':'Уточнить статус отклика'})
     assert status==200,(status,data)
     updated=data['job'];assert updated['revision']==2 and len(updated['history'])==2
+    loaded=next(j for j in request('GET')[1]['jobs'] if j['id']==job['id'])
+    assert loaded['nextActionDate']=='2026-09-15' and loaded['nextAction']=='Уточнить статус отклика'
     assert request('PUT',job)[0]==409
     assert request('DELETE',job)[0]==409
-    assert request('DELETE',updated)[0]==200
+    status,data=request('PUT',{**updated,'nextActionDate':'','nextAction':''})
+    assert status==200,(status,data)
+    cleared=data['job'];assert cleared['revision']==3
+    loaded=next(j for j in request('GET')[1]['jobs'] if j['id']==job['id'])
+    assert loaded['nextActionDate']=='' and loaded['nextAction']==''
+    assert request('DELETE',cleared)[0]==200
     assert all(j['id']!=job['id'] for j in request('GET')[1]['jobs'])
 finally:
     for j in request('GET')[1]['jobs']:
         if j['id']==job['id']:request('DELETE',j)
-print('PASS: auth, origin, validation, durable CRUD, ownership, history, concurrent updates, cleanup')
+print('PASS: auth, origin, validation, durable CRUD, legacy cards, action scheduling/clearing, ownership, history, concurrent updates, cleanup')

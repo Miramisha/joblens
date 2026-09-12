@@ -879,6 +879,45 @@ h1 > span {
   align-items: center;
   color: #8260b7;
 }
+.next-action-label {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: #2f6a56;
+  max-width: 100%;
+}
+.next-action-label svg {
+  flex-shrink: 0;
+}
+.next-action-label > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.overdue-action {
+  color: #b14a36;
+}
+.action-items {
+  margin: 0 0 24px;
+}
+.action-list {
+  max-height: 320px;
+  overflow-y: auto;
+}
+.action-description {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.action-date {
+  flex-shrink: 0;
+}
+@media (max-width: 600px) {
+  .action-items button {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
 @media (min-width: 1600px) {
   .content {
     max-width: 1700px;

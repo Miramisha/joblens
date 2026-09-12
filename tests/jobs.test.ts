@@ -17,12 +17,35 @@ void test('validation rejects dangerous links, invalid dates and malformed data'
     assert.throws(() => validateJob({ ...input, url }));
   for (const interviewDate of ['2026-02-30', '2026-13-01', 'invalid'])
     assert.throws(() => validateJob({ ...input, interviewDate }));
+  for (const nextActionDate of ['2026-02-30', '2026-13-01', 'invalid'])
+    assert.throws(() => validateJob({ ...input, nextActionDate }));
+  assert.throws(() => validateJob({ ...input, nextAction: 'x'.repeat(501) }));
+  assert.throws(() => validateJob({ ...input, nextActionDate: null }));
   assert.throws(() => validateJob({ ...input, company: '' }));
   assert.throws(() => validateJob({ ...input, stage: 'unknown' }));
   assert.throws(() => validateJob({ ...input, skills: [4] }));
   assert.equal(
     validateJob({ ...input, url: 'https://example.com/job' }).url,
     'https://example.com/job',
+  );
+  assert.deepEqual(
+    validateJob({
+      company: 'Test',
+      title: 'Frontend',
+      stage: 'saved',
+      location: '',
+      salary: '',
+      url: '',
+      description: '',
+      skills: [],
+      notes: '',
+      interviewDate: '',
+    }),
+    {
+      ...input,
+      nextActionDate: '',
+      nextAction: '',
+    },
   );
 });
 void test('analytics keeps reached interviews after rejection and never double counts skills', () => {

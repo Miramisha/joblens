@@ -55,7 +55,7 @@ import {
 } from '@/lib/jobs';
 const dateLabel = (date: string) =>
   new Intl.DateTimeFormat('ru', { day: 'numeric', month: 'short' }).format(
-    new Date(date),
+    new Date(/^\d{4}-\d{2}-\d{2}$/.test(date) ? `${date}T12:00:00` : date),
   );
 function StageSelect({
   value,
@@ -404,6 +404,9 @@ export default function Workspace({ signedIn }: { signedIn: boolean }) {
   const upcoming = jobs
     .filter((j) => j.stage === 'interview' && j.interviewDate >= localDate)
     .sort((a, b) => a.interviewDate.localeCompare(b.interviewDate));
+  const nextActions = jobs
+    .filter((j) => j.nextActionDate)
+    .sort((a, b) => a.nextActionDate.localeCompare(b.nextActionDate));
   return (
     <main className="workspace">
       <header className="topbar">
@@ -572,6 +575,43 @@ export default function Workspace({ signedIn }: { signedIn: boolean }) {
             {notice}
           </output>
         )}
+        {loaded && !loading && !error && nextActions.length > 0 && (
+          <section
+            className="analytics-card upcoming action-items"
+            aria-label="Следующие действия"
+          >
+            <h2>
+              <CalendarDays size={19} />
+              Следующие действия · {nextActions.length}
+            </h2>
+            <div className="action-list">
+              {nextActions.map((job) => (
+                <button key={job.id} onClick={() => edit(job)}>
+                  <span className="action-description">
+                    <strong>
+                      {job.company} · {job.title}
+                    </strong>
+                    <small>{job.nextAction || 'Следующее действие'}</small>
+                  </span>
+                  <span
+                    className={
+                      job.nextActionDate < localDate
+                        ? 'overdue-action action-date'
+                        : 'action-date'
+                    }
+                  >
+                    {job.nextActionDate < localDate
+                      ? 'Просрочено · '
+                      : job.nextActionDate === localDate
+                        ? 'Сегодня · '
+                        : ''}
+                    {dateLabel(job.nextActionDate)}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
         {loading || !loaded ? (
           <div className="stats" aria-label="Загрузка вакансий">
             {[0, 1, 2, 3].map((i) => (
@@ -695,6 +735,20 @@ export default function Workspace({ signedIn }: { signedIn: boolean }) {
                                   )}
                                 </div>
                                 <footer>
+                                  {job.nextActionDate ? (
+                                    <span
+                                      className={`next-action-label${job.nextActionDate < localDate ? ' overdue-action' : ''}`}
+                                    >
+                                      <CalendarDays size={13} />
+                                      <span>
+                                        {job.nextActionDate < localDate
+                                          ? 'Просрочено · '
+                                          : ''}
+                                        {dateLabel(job.nextActionDate)} ·{' '}
+                                        {job.nextAction || 'Следующее действие'}
+                                      </span>
+                                    </span>
+                                  ) : null}
                                   {job.interviewDate &&
                                   job.stage === 'interview' ? (
                                     <span className="interview-label">
@@ -702,9 +756,9 @@ export default function Workspace({ signedIn }: { signedIn: boolean }) {
                                       {dateLabel(job.interviewDate)} ·
                                       Собеседование
                                     </span>
-                                  ) : (
+                                  ) : !job.nextActionDate ? (
                                     <>Добавлено {dateLabel(job.createdAt)}</>
-                                  )}
+                                  ) : null}
                                 </footer>
                               </button>
                             </article>
@@ -923,7 +977,39 @@ export default function Workspace({ signedIn }: { signedIn: boolean }) {
                     }
                   />
                 </label>
+                <label>
+                  Дата следующего действия
+                  <input
+                    type="date"
+                    value={form.nextActionDate}
+                    onChange={(e) =>
+                      setForm({ ...form, nextActionDate: e.target.value })
+                    }
+                  />
+                </label>
               </div>
+              <label>
+                Следующее действие
+                <input
+                  maxLength={500}
+                  value={form.nextAction}
+                  onChange={(e) =>
+                    setForm({ ...form, nextAction: e.target.value })
+                  }
+                  placeholder="Написать рекрутеру, подготовить кейс, уточнить статус"
+                />
+              </label>
+              {(form.nextActionDate || form.nextAction) && (
+                <button
+                  type="button"
+                  className="text-button"
+                  onClick={() =>
+                    setForm({ ...form, nextActionDate: '', nextAction: '' })
+                  }
+                >
+                  Убрать действие из плана
+                </button>
+              )}
               <label>
                 Ссылка на вакансию
                 <div className="url-field">

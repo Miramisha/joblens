@@ -1,6 +1,6 @@
 import { getUser } from '@/app/auth';
 import { getDb } from '@/db';
-import { validateJob, type Job } from '@/lib/jobs';
+import { blank, validateJob, type Job } from '@/lib/jobs';
 const json = (data: unknown, status = 200) =>
   Response.json(data, {
     status,
@@ -68,7 +68,9 @@ export async function GET(request: Request) {
       )
       .bind(owner)
       .all<{ payload: string }>();
-    return json({ jobs: result.results.map((r) => JSON.parse(r.payload)) });
+    return json({
+      jobs: result.results.map((r) => ({ ...blank, ...JSON.parse(r.payload) })),
+    });
   });
 }
 export async function POST(request: Request) {
@@ -120,7 +122,7 @@ export async function PUT(request: Request) {
       .bind(raw.id, owner)
       .first<{ payload: string }>();
     if (!row) return json({ error: 'Вакансия не найдена.' }, 404);
-    const old: Job = JSON.parse(row.payload);
+    const old: Job = { ...blank, ...JSON.parse(row.payload) };
     if (old.revision !== raw.revision)
       return json(
         {

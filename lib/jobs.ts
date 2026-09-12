@@ -23,6 +23,8 @@ export type JobInput = {
   skills: string[];
   notes: string;
   interviewDate: string;
+  nextActionDate: string;
+  nextAction: string;
   stage: Stage;
 };
 export type Job = JobInput & {
@@ -42,12 +44,18 @@ export const blank: JobInput = {
   skills: [],
   notes: '',
   interviewDate: '',
+  nextActionDate: '',
+  nextAction: '',
   stage: 'saved',
 };
 export function validateJob(value: unknown): JobInput {
   if (!value || typeof value !== 'object' || Array.isArray(value))
     throw Error('Некорректная вакансия.');
-  const v = value as Record<string, unknown>;
+  const v: Record<string, unknown> = {
+    nextActionDate: '',
+    nextAction: '',
+    ...(value as Record<string, unknown>),
+  };
   const limits: Record<string, number> = {
     company: 120,
     title: 180,
@@ -57,6 +65,8 @@ export function validateJob(value: unknown): JobInput {
     description: 20000,
     notes: 10000,
     interviewDate: 10,
+    nextActionDate: 10,
+    nextAction: 500,
   };
   const out: Record<string, unknown> = {};
   for (const [key, max] of Object.entries(limits)) {
@@ -79,14 +89,19 @@ export function validateJob(value: unknown): JobInput {
     if (!['https:', 'http:'].includes(u.protocol))
       throw Error('Ссылка должна начинаться с https:// или http://.');
   }
-  const date = out.interviewDate as string;
-  if (
-    date &&
-    (!/^\d{4}-\d{2}-\d{2}$/.test(date) ||
-      Number.isNaN(Date.parse(date)) ||
-      new Date(date).toISOString().slice(0, 10) !== date)
-  )
-    throw Error('Укажите корректную дату собеседования.');
+  for (const [field, message] of [
+    ['interviewDate', 'Укажите корректную дату собеседования.'],
+    ['nextActionDate', 'Укажите корректную дату следующего действия.'],
+  ] as const) {
+    const date = out[field] as string;
+    if (
+      date &&
+      (!/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+        Number.isNaN(Date.parse(date)) ||
+        new Date(date).toISOString().slice(0, 10) !== date)
+    )
+      throw Error(message);
+  }
   if (
     !Array.isArray(v.skills) ||
     v.skills.length > 30 ||

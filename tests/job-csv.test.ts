@@ -9,6 +9,8 @@ const job = {
   description: 'Строка 1\nСтрока 2',
   notes: '=HYPERLINK("https://example.com")',
   skills: ['React', 'A|B'],
+  nextActionDate: '2026-09-15',
+  nextAction: 'Уточнить статус; обсудить "тестовое"',
 };
 void test('CSV roundtrip preserves multiline text, quotes, skills and formula-like literals', () => {
   const csv = exportCSV([job]);
@@ -31,6 +33,8 @@ void test('supports comma headers, optional fields and readable stages', () => {
   const row = parseCSV('company,title,stage\r\nCompany,Go,Собеседование')[0];
   assert.equal(row.job?.stage, 'interview');
   assert.equal(row.job?.notes, '');
+  assert.equal(row.job?.nextActionDate, '');
+  assert.equal(row.job?.nextAction, '');
   assert.equal(parseCSV('Компания;Должность\nA;B')[0].job?.stage, 'saved');
 });
 void test('rejects malformed rows, dangerous URLs, unknown headers and oversized imports', () => {
@@ -43,6 +47,7 @@ void test('rejects malformed rows, dangerous URLs, unknown headers and oversized
   );
   assert.ok(parseCSV('company,title,url\nA,B,javascript:alert(1)')[0].error);
   assert.ok(parseCSV('company,title,interviewDate\nA,B,2026-02-30')[0].error);
+  assert.ok(parseCSV('company,title,nextActionDate\nA,B,2026-02-30')[0].error);
   assert.ok(parseCSV('company,title\nA,B,C')[0].error);
 });
 void test('preview marks existing and intra-file duplicates without changing data', () => {

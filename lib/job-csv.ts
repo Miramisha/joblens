@@ -12,6 +12,8 @@ const columns = [
   ['skills', 'Навыки'],
   ['notes', 'Заметки'],
   ['interviewDate', 'Дата собеседования'],
+  ['nextActionDate', 'Дата следующего действия'],
+  ['nextAction', 'Следующее действие'],
 ] as const;
 const dangerous = (value: string) => /^[\s]*[=+\-@]|^[\t\r\n']/.test(value);
 const encode = (value: string) =>
