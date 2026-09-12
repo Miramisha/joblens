@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { CSVTransfer } from '@/components/joblens/csv-transfer';
 import { HHSearch } from '@/components/joblens/hh-search';
 import { vacancyId, type Vacancy } from '@/lib/hh/vacancies';
 import { SkillSuggestions } from '@/components/joblens/skill-suggestions';
@@ -97,6 +98,7 @@ export default function Workspace({ signedIn }: { signedIn: boolean }) {
     [loading, setLoading] = useState(false),
     [error, setError] = useState(''),
     [notice, setNotice] = useState('');
+  const [csvOpen, setCSVOpen] = useState(false);
   const [hhOpen, setHHOpen] = useState(false);
   function importVacancy(v: Vacancy) {
     const existing = jobs.find((j) => vacancyId(j.url) === v.id);
@@ -450,6 +452,13 @@ export default function Workspace({ signedIn }: { signedIn: boolean }) {
           <div className="workspace-actions">
             <button
               className="secondary"
+              disabled={saving || loading || !loaded || !!error}
+              onClick={() => setCSVOpen(true)}
+            >
+              Импорт / экспорт
+            </button>
+            <button
+              className="secondary"
               onClick={() => setHHOpen(true)}
               disabled={saving || loading}
             >
@@ -796,6 +805,16 @@ export default function Workspace({ signedIn }: { signedIn: boolean }) {
           )
         )}
       </div>
+      <CSVTransfer
+        open={csvOpen}
+        onClose={() => setCSVOpen(false)}
+        jobs={jobs}
+        personal={signedIn && !demo}
+        onImported={(message) => {
+          setNotice(message);
+          void reload();
+        }}
+      />
       <HHSearch
         open={hhOpen}
         onClose={() => setHHOpen(false)}
