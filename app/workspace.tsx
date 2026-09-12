@@ -1,6 +1,8 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { HHSearch } from '@/components/joblens/hh-search';
+import { vacancyId, type Vacancy } from '@/lib/hh/vacancies';
 import { SkillSuggestions } from '@/components/joblens/skill-suggestions';
 import {
   Search,
@@ -95,6 +97,29 @@ export default function Workspace({ signedIn }: { signedIn: boolean }) {
     [loading, setLoading] = useState(false),
     [error, setError] = useState(''),
     [notice, setNotice] = useState('');
+  const [hhOpen, setHHOpen] = useState(false);
+  function importVacancy(v: Vacancy) {
+    const existing = jobs.find((j) => vacancyId(j.url) === v.id);
+    setHHOpen(false);
+    if (existing) {
+      edit(existing);
+      return;
+    }
+    setEditing(null);
+    setForm({
+      ...blank,
+      company: v.company,
+      title: v.title,
+      location: v.location,
+      salary: v.salary,
+      url: v.url,
+      description: v.description,
+      skills: v.skills,
+    });
+    setSkillText(v.skills.join(', '));
+    setFormError('');
+    setOpen(true);
+  }
   const [view, setView] = useState('board'),
     [query, setQuery] = useState(''),
     [filter, setFilter] = useState('all');
@@ -422,14 +447,23 @@ export default function Workspace({ signedIn }: { signedIn: boolean }) {
             </h1>
             <p className="subtitle">Все возможности — в одном месте.</p>
           </div>
-          <button
-            className="primary"
-            onClick={() => create()}
-            disabled={saving || loading || !!error}
-          >
-            <Plus size={18} />
-            Добавить вакансию
-          </button>
+          <div className="workspace-actions">
+            <button
+              className="secondary"
+              onClick={() => setHHOpen(true)}
+              disabled={saving || loading}
+            >
+              Вакансии hh.ru
+            </button>
+            <button
+              className="primary"
+              onClick={() => create()}
+              disabled={saving || loading || !!error}
+            >
+              <Plus size={18} />
+              Добавить вакансию
+            </button>
+          </div>
         </div>
         <section className="stats" aria-label="Статистика поиска">
           {[
@@ -762,6 +796,21 @@ export default function Workspace({ signedIn }: { signedIn: boolean }) {
           )
         )}
       </div>
+      <HHSearch
+        open={hhOpen}
+        onClose={() => setHHOpen(false)}
+        onSelect={importVacancy}
+        onManual={(url) => {
+          create();
+          const id = vacancyId(url);
+          if (id) setForm({ ...blank, url: `https://hh.ru/vacancy/${id}` });
+        }}
+        signedIn={signedIn}
+        savedUrls={jobs.map((j) => {
+          const id = vacancyId(j.url);
+          return id ? `https://hh.ru/vacancy/${id}` : j.url;
+        })}
+      />
       <Dialog
         open={open}
         onOpenChange={(v) => {

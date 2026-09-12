@@ -27,16 +27,6 @@ def req(path,method='GET',data=None,user=owner,origin=BASE,cookie=None):
     try:
         with opener.open(request) as response:return response.status,response.headers,response.read().decode()
     except urllib.error.HTTPError as response:return response.code,response.headers,response.read().decode()
-def connect():
-    status,headers,_=req('/api/hh/connect','POST');assert status==303
-    url=urllib.parse.urlparse(headers['Location']);assert url.netloc=='hh.ru'
-    query=urllib.parse.parse_qs(url.query);assert query['code_challenge_method']==['S256']
-    assert 'client_secret' not in query
-    return query['state'][0],headers['Set-Cookie'].split(';')[0]
-def callback(state,cookie,user=owner):
-    status,headers,_=req('/api/hh/callback?'+urllib.parse.urlencode({'state':state,'error':'access_denied'}),user=user,cookie=cookie)
-    assert status==303
-    return urllib.parse.parse_qs(urllib.parse.urlparse(headers['Location']).query)['hh'][0]
 assert req('/api/account','POST',{'displayName':'Test'},user=None)[0]==401
 assert req('/api/account','POST',{'displayName':'Test'},origin='https://other.example')[0]==403
 result=req('/api/account','POST',{'displayName':''});assert result[0]==400,(result[0],result[2])
@@ -44,16 +34,13 @@ assert req('/api/account','POST',{'displayName':'x'*3000})[0]==400
 assert req('/api/account','POST',{'displayName':owner})[0]==200
 assert req('/api/account','POST',{'displayName':other},user=other)[0]==200
 assert owner in req('/account')[2] and other not in req('/account')[2]
-state,cookie=connect()
-assert callback(state,cookie,user=other)=='invalid_state'
-assert callback(state,'joblens_hh_state=wrong')=='invalid_state'
-assert callback(state,cookie)=='denied'
-assert callback(state,cookie)=='invalid_state'
-state,cookie=connect()
+assert req('/api/hh/connect','POST',user=None)[0]==401
+assert req('/api/hh/connect','POST',origin='https://other.example')[0]==403
+assert req('/api/hh/connect','POST')[0]==410
 assert req('/api/hh/disconnect','POST',origin='https://other.example')[0]==403
 assert req('/api/hh/disconnect','POST')[0]==303
-assert callback(state,cookie)=='invalid_state'
-old,old_cookie=connect();new,new_cookie=connect()
-assert callback(old,old_cookie)=='invalid_state'
-assert callback(new,new_cookie)=='denied'
-print('PASS: account creation, owner isolation, CSRF, PKCE redirect, cookie binding, cancellation, replay, restart and disconnect invalidation')
+assert req('/api/hh/vacancies?q=frontend',user=None)[0]==401
+assert req('/api/hh/vacancies?q=x')[0]==400
+assert req('/api/hh/vacancies?url=https%3A%2F%2Flocalhost%2Fvacancy%2F1')[0]==400
+assert req('/api/hh/vacancies?q=frontend&page=-1')[0]==400
+print('PASS: profile, ownership, CSRF, retired OAuth, disconnect, vacancy query validation and SSRF rejection')

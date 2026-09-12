@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Link from 'next/link';
 import { UserRound, Link2, ShieldCheck } from 'lucide-react';
 import {
   AlertDialog,
@@ -12,15 +13,11 @@ export default function AccountPanel({
   initialName,
   email,
   registered,
-  configured,
   connection,
-  expired,
 }: {
-  expired: boolean;
   initialName: string;
   email: string;
   registered: boolean;
-  configured: boolean;
   connection: {
     display_name: string;
     connected_at: string;
@@ -108,61 +105,34 @@ export default function AccountPanel({
       <section className="account-card">
         <div className="account-section-title">
           <Link2 size={21} />
-          <h2>Подключение hh.ru</h2>
+          <h2>Вакансии hh.ru</h2>
         </div>
-        {connection ? (
-          <>
-            <span className={`connection-badge ${expired ? 'expired' : ''}`}>
-              {expired ? 'Нужно обновить подключение' : 'Подключено'}
-            </span>
-            <h3>{connection.display_name}</h3>
+        <p>
+          На доске можно найти вакансию hh.ru или загрузить её по ссылке.
+          Отмечай этапы отклика в JobLens — они попадут в твою статистику.
+        </p>
+        <div className="connection-info">
+          Синхронизация личного профиля недоступна: hh.ru прекратил поддержку
+          API для соискателей. Доступ к открытым вакансиям также может
+          ограничиваться со стороны hh.ru.
+        </div>
+        <Link className="primary" href="/">
+          Перейти к доске
+        </Link>
+        {connection && (
+          <div className="connection-actions">
             <p>
-              Подключён{' '}
-              {new Date(connection.connected_at).toLocaleDateString('ru-RU')}.
+              Сохранён прежний доступ к профилю {connection.display_name}. Его
+              можно удалить.
             </p>
-            <p>
-              Сбор статистики откликов добавим следующим шагом. Сейчас доступно
-              подключение профиля.
-            </p>
-            {expired && (
-              <p>
-                Срок доступа истёк. Переподключи профиль, чтобы снова разрешить
-                доступ.
-              </p>
-            )}
-          </>
-        ) : (
-          <p>
-            Разреши JobLens доступ к своему профилю соискателя на hh.ru. Пароль
-            вводится только на стороне hh.ru.
-          </p>
-        )}
-        {!configured && (
-          <div className="connection-info">
-            Подключение hh.ru пока не настроено владельцем сайта.
-          </div>
-        )}
-        {!exists && (
-          <p className="connection-info">Сначала создай профиль JobLens.</p>
-        )}
-        <div className="connection-actions">
-          <form method="post" action="/api/hh/connect" target="_top">
-            <button
-              className="primary"
-              disabled={!exists || !configured || busy}
-            >
-              {connection ? 'Переподключить hh.ru' : 'Подключить hh.ru'}
-            </button>
-          </form>
-          {connection && (
             <button className="secondary" onClick={() => setConfirm(true)}>
               Отключить
             </button>
-          )}
-        </div>
+          </div>
+        )}
         <p className="account-security">
           <ShieldCheck size={17} />
-          Подключение привязано только к твоему аккаунту JobLens.
+          Личные вакансии и заметки доступны только в твоём аккаунте.
         </p>
       </section>
       <AlertDialog open={confirm} onOpenChange={setConfirm}>
@@ -170,7 +140,7 @@ export default function AccountPanel({
           <AlertDialogTitle>Отключить hh.ru?</AlertDialogTitle>
           <AlertDialogDescription>
             JobLens удалит сохранённый доступ к профилю. Твои вакансии и заметки
-            останутся. При необходимости профиль можно подключить заново.
+            останутся.
           </AlertDialogDescription>
           <div className="form-footer">
             <AlertDialogCancel>Отмена</AlertDialogCancel>

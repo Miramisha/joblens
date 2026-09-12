@@ -3,7 +3,6 @@ import { getUser } from '@/app/auth';
 import { getAuthSettings } from '@/lib/auth/runtime';
 import EmailLogin from './email-login';
 import { getDb } from '@/db';
-import { getHHSettings } from '@/lib/hh/runtime';
 import AccountPanel from './panel';
 export const dynamic = 'force-dynamic';
 const messages: Record<string, string> = {
@@ -27,9 +26,6 @@ export default async function Account({
 }: {
   searchParams: Promise<{ hh?: string }>;
 }) {
-  // This dynamic Server Component computes expiry once per HTTP request.
-  // oxlint-disable-next-line react/react-compiler
-  const checkedAt = Math.floor(Date.now() / 1000);
   const user = await getUser();
   const params = await searchParams;
   if (!user)
@@ -96,9 +92,7 @@ export default async function Account({
           initialName={account?.display_name ?? user.displayName}
           email={user.email}
           registered={!!account}
-          configured={!!getHHSettings()}
           connection={connection}
-          expired={!!connection && connection.expires_at <= checkedAt}
         />
       )}
     </main>

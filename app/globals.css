@@ -1256,3 +1256,84 @@ h1 > span {
   opacity: 0.55;
   cursor: not-allowed;
 }
+
+.workspace-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.hh-dialog {
+  max-width: 760px;
+}
+.hh-search-row {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  margin: 16px 0;
+}
+.hh-search-row label {
+  display: grid;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+}
+.hh-search-row input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 16px;
+}
+.hh-alternatives,
+.hh-result-actions,
+.hh-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.hh-alternatives {
+  margin: 16px 0;
+  font-size: 14px;
+}
+.hh-results {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+.hh-results article {
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow-wrap: anywhere;
+}
+.hh-results h3 {
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+.hh-results p {
+  font-size: 14px;
+  color: #65758d;
+  margin-bottom: 8px;
+}
+.hh-result-actions {
+  margin-top: 16px;
+  font-size: 14px;
+}
+.hh-pagination {
+  margin-top: 20px;
+}
+@media (max-width: 600px) {
+  .hh-search-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .workspace-actions {
+    width: 100%;
+  }
+  .workspace-actions button {
+    flex: 1;
+  }
+}
