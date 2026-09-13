@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Typecheck, lint, test and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@v2
+        with:
+          version: 11.19.0
+          runtime: node@22.13.0
+          cache: true
+          install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check TypeScript
+        run: pnpm typecheck
+
+      - name: Check code style
+        run: pnpm lint
+
+      - name: Run unit tests
+        run: pnpm test
+
+      - name: Build production bundle
+        run: pnpm build
