@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { CSVTransfer } from '@/components/joblens/csv-transfer';
+import { JobInsights } from '@/components/joblens/job-insights';
 import { HHSearch } from '@/components/joblens/hh-search';
 import { vacancyId, type Vacancy } from '@/lib/hh/vacancies';
 import { SkillSuggestions } from '@/components/joblens/skill-suggestions';
@@ -785,77 +786,64 @@ export default function Workspace({ signedIn }: { signedIn: boolean }) {
           </>
         ) : (
           !error && (
-            <section className="analytics-grid">
-              <article className="analytics-card">
-                <p className="eyebrow">НАВЫКИ В ВАКАНСИЯХ</p>
-                <h2>Что пригодится в работе</h2>
-                <p>
-                  Частота навыков среди всех {all.total} вакансий. Учитываются
-                  навыки, указанные в карточках.
-                </p>
-                {all.skills.length ? (
-                  all.skills.slice(0, 12).map((s) => (
-                    <div className="skill-row" key={s.name}>
-                      <div>
-                        <strong>{s.name}</strong>
-                        <span>
-                          {s.count} из {all.total}
-                        </span>
-                      </div>
-                      <div className="bar-track">
-                        <div
-                          style={{ width: `${(s.count / all.total) * 100}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <p className="empty-copy">
-                    Добавь навыки в карточки — здесь появится статистика.
-                  </p>
-                )}
-              </article>
-              <div>
-                <article className="analytics-card conversion">
-                  <p className="eyebrow">ОТ ОТКЛИКА К СОБЕСЕДОВАНИЮ</p>
-                  <strong className="big-number">
-                    {all.conversion}
-                    <span>%</span>
-                  </strong>
+            <>
+              <JobInsights jobs={jobs} onEdit={edit} />
+              <section className="analytics-grid">
+                <article className="analytics-card">
+                  <p className="eyebrow">НАВЫКИ В ВАКАНСИЯХ</p>
+                  <h2>Что пригодится в работе</h2>
                   <p>
-                    {all.interviews} из {all.applied} откликов дошли до
-                    собеседования или оффера.
+                    Частота навыков среди всех {all.total} вакансий. Учитываются
+                    навыки, указанные в карточках.
                   </p>
-                  <small>
-                    Расчёт по текущим этапам и истории. Прямой переход в «Оффер»
-                    учитывается как прохождение интервью, в «Отказ» — как
-                    отправленный отклик.
-                  </small>
-                </article>
-                <article className="analytics-card upcoming">
-                  <h2>
-                    <CalendarDays size={19} />
-                    Ближайшие собеседования
-                  </h2>
-                  {upcoming.length ? (
-                    upcoming.map((j) => (
-                      <button key={j.id} onClick={() => edit(j)}>
-                        <span>
-                          <strong>{j.company}</strong>
-                          <small>{j.title}</small>
-                        </span>
-                        <span>{dateLabel(j.interviewDate)}</span>
-                      </button>
+                  {all.skills.length ? (
+                    all.skills.slice(0, 12).map((s) => (
+                      <div className="skill-row" key={s.name}>
+                        <div>
+                          <strong>{s.name}</strong>
+                          <span>
+                            {s.count} из {all.total}
+                          </span>
+                        </div>
+                        <div className="bar-track">
+                          <div
+                            style={{ width: `${(s.count / all.total) * 100}%` }}
+                          />
+                        </div>
+                      </div>
                     ))
                   ) : (
-                    <p>
-                      Пока нет запланированных встреч. Дату можно указать в
-                      карточке вакансии.
+                    <p className="empty-copy">
+                      Добавь навыки в карточки — здесь появится статистика.
                     </p>
                   )}
                 </article>
-              </div>
-            </section>
+                <div>
+                  <article className="analytics-card upcoming">
+                    <h2>
+                      <CalendarDays size={19} />
+                      Ближайшие собеседования
+                    </h2>
+                    {upcoming.length ? (
+                      upcoming.map((j) => (
+                        <button key={j.id} onClick={() => edit(j)}>
+                          <span>
+                            <strong>{j.company}</strong>
+                            <small>{j.title}</small>
+                          </span>
+                          <span>{dateLabel(j.interviewDate)}</span>
+                        </button>
+                      ))
+                    ) : (
+                      <p>
+                        Пока нет запланированных встреч. Дату можно указать в
+                        карточке вакансии.
+                      </p>
+                    )}
+                  </article>
+                </div>
+              </section>
+            </>
           )
         )}
       </div>

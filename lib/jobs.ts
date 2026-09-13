@@ -205,7 +205,8 @@ export function demoJobs(): Job[] {
   ];
   return data.map(([company, title, stage, salary, skills], i) => {
     const d = new Date();
-    d.setDate(d.getDate() - i - 1);
+    // Include one older active application to demonstrate the follow-up list.
+    d.setDate(d.getDate() - (i === 2 ? 10 : i + 1));
     const at = d.toISOString();
     return {
       ...blank,
