@@ -160,7 +160,7 @@ export default function EmailLogin({ configured }: { configured: boolean }) {
           </div>
         </>
       )}
-      <Link className="text-button" href="/">
+      <Link className="text-button" href="/demo">
         Посмотреть демо
       </Link>
     </section>

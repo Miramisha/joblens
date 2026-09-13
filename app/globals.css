@@ -1441,6 +1441,47 @@ h1 > span {
 .login-email {
   overflow-wrap: anywhere;
 }
+.status-page {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #f5f7fb;
+}
+.status-card {
+  width: min(100%, 560px);
+  padding: 40px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: white;
+  box-shadow: 0 16px 50px #172b4810;
+}
+.status-card h1 {
+  margin: 8px 0 14px;
+  color: #18253f;
+  font-size: clamp(28px, 6vw, 42px);
+  line-height: 1.1;
+  letter-spacing: -1.2px;
+}
+.status-card > p:not(.eyebrow) {
+  color: #6d7b93;
+  font-size: 16px;
+  line-height: 1.65;
+}
+.status-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 28px;
+  flex-wrap: wrap;
+}
+@media (max-width: 520px) {
+  .status-card {
+    padding: 28px 22px;
+  }
+  .status-actions > * {
+    width: 100%;
+  }
+}
 .email-login-form button:disabled,
 .email-login-actions button:disabled {
   opacity: 0.55;

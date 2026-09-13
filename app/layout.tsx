@@ -13,9 +13,22 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'JobLens — твой поиск работы',
+  applicationName: 'JobLens',
+  title: {
+    default: 'JobLens — трекер поиска работы',
+    template: '%s · JobLens',
+  },
   description:
-    'Вакансии, отклики, собеседования и аналитика навыков в одном пространстве.',
+    'Ведите вакансии по этапам, планируйте следующие действия и анализируйте результаты поиска работы.',
+  keywords: [
+    'трекер вакансий',
+    'поиск работы',
+    'отклики',
+    'собеседования',
+    'аналитика вакансий',
+  ],
+  icons: { icon: '/favicon.svg' },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({
