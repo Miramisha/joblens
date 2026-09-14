@@ -37,6 +37,7 @@ export function HHSearch({
   function close() {
     controller.current?.abort();
     setBusy(false);
+    setError('');
     onClose();
   }
   async function load(source?: string, nextPage = 0, text = query) {
@@ -116,7 +117,10 @@ export function HHSearch({
                 <input
                   id="hh-query"
                   value={query}
-                  onChange={(e) => setQuery(e.target.value)}
+                  onChange={(e) => {
+                    setQuery(e.target.value);
+                    setError('');
+                  }}
                   placeholder="Frontend, Go, аналитик данных"
                   minLength={2}
                   maxLength={160}
@@ -144,7 +148,10 @@ export function HHSearch({
                   id="hh-url"
                   type="url"
                   value={url}
-                  onChange={(e) => setUrl(e.target.value)}
+                  onChange={(e) => {
+                    setUrl(e.target.value);
+                    setError('');
+                  }}
                   placeholder="https://hh.ru/vacancy/…"
                   maxLength={2048}
                   required
