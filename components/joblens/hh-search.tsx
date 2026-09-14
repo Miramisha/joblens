@@ -7,7 +7,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import type { Vacancy } from '@/lib/hh/vacancies';
+import { vacancySourceNotes, type Vacancy } from '@/lib/hh/vacancies';
 export function HHSearch({
   open,
   onClose,
@@ -198,6 +198,16 @@ export function HHSearch({
                     {v.company} · {v.location}
                   </p>
                   <strong>{v.salary || 'Зарплата не указана'}</strong>
+                  {vacancySourceNotes(v) && (
+                    <p
+                      style={{
+                        whiteSpace: 'pre-line',
+                        overflowWrap: 'anywhere',
+                      }}
+                    >
+                      {vacancySourceNotes(v)}
+                    </p>
+                  )}
                   <div className="hh-result-actions">
                     <a href={v.url} target="_blank" rel="noreferrer">
                       Подробнее на hh.ru

@@ -4,7 +4,11 @@ import Link from 'next/link';
 import { CSVTransfer } from '@/components/joblens/csv-transfer';
 import { JobInsights } from '@/components/joblens/job-insights';
 import { HHSearch } from '@/components/joblens/hh-search';
-import { vacancyId, type Vacancy } from '@/lib/hh/vacancies';
+import {
+  vacancyId,
+  vacancySourceNotes,
+  type Vacancy,
+} from '@/lib/hh/vacancies';
 import { SkillSuggestions } from '@/components/joblens/skill-suggestions';
 import {
   Search,
@@ -117,6 +121,7 @@ export default function Workspace({ signedIn }: { signedIn: boolean }) {
       salary: v.salary,
       url: v.url,
       description: v.description,
+      notes: vacancySourceNotes(v),
       skills: v.skills,
     });
     setSkillText(v.skills.join(', '));

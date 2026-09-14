@@ -7,6 +7,8 @@ export type Vacancy = {
   url: string;
   description: string;
   skills: string[];
+  workFormat: string;
+  publishedAt: string;
 };
 export function vacancyId(value: string): string | null {
   if (/^[1-9]\d{0,14}$/.test(value)) return value;
@@ -105,6 +107,22 @@ export function mapVacancy(value: unknown): Vacancy {
       : '',
     url: `https://hh.ru/vacancy/${id}`,
     description: plainDescription(v.description),
+    workFormat: Array.isArray(v.work_format)
+      ? [
+          ...new Set(
+            v.work_format
+              .map((item) => text(record(item).name, 80))
+              .filter(Boolean),
+          ),
+        ]
+          .join(', ')
+          .slice(0, 240)
+      : '',
+    publishedAt:
+      /^\d{4}-\d{2}-\d{2}T/.test(text(v.published_at, 40)) &&
+      Number.isFinite(Date.parse(text(v.published_at, 40)))
+        ? new Date(text(v.published_at, 40)).toISOString()
+        : '',
     skills: Array.isArray(v.key_skills)
       ? [
           ...new Set(
@@ -113,4 +131,15 @@ export function mapVacancy(value: unknown): Vacancy {
         ].slice(0, 30)
       : [],
   };
+}
+
+export function vacancySourceNotes(v: Vacancy): string {
+  return [
+    v.workFormat ? `Формат работы: ${v.workFormat}` : '',
+    v.publishedAt
+      ? `Опубликовано на hh.ru: ${new Intl.DateTimeFormat('ru-RU', { timeZone: 'Europe/Moscow' }).format(new Date(v.publishedAt))}`
+      : '',
+  ]
+    .filter(Boolean)
+    .join('\n');
 }
