@@ -31,6 +31,10 @@ export async function POST(request: Request) {
   try {
     const db = getDb();
     const now = Math.floor(Date.now() / 1000);
+    await db
+      .prepare('DELETE FROM email_challenges WHERE expires_at<=?')
+      .bind(now)
+      .run();
     // Atomic fixed-window quotas are shared by every Worker instance.
     for (const [bucket, limit] of [
       ['global', 200],
@@ -56,7 +60,7 @@ export async function POST(request: Request) {
         email,
         hash,
         await codeHash(settings.secret, hash, code),
-        now + 600,
+        now + 300,
         now,
         now - 60,
       )
@@ -86,7 +90,7 @@ export async function POST(request: Request) {
             'joblens_challenge',
             token,
             request.url,
-            600,
+            300,
           ),
         },
       },

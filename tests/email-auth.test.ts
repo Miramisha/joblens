@@ -75,7 +75,7 @@ void test('Resend receives a transactional code with a stable idempotency key', 
       const body = JSON.parse(init?.body as string);
       assert.deepEqual(body.to, ['user@example.com']);
       assert.match(body.text, /001234/);
-      assert.match(body.text, /10 минут/);
+      assert.match(body.text, /5 минут/);
       return Response.json({ id: 'test' });
     },
   );
@@ -91,4 +91,49 @@ void test('mail provider failures are not treated as successful delivery', async
     ),
     /Email delivery failed/,
   );
+});
+
+void test('SMTP2GO accepts one code recipient through HTTPS', async () => {
+  await sendCode(
+    { provider: 'smtp2go', apiKey: 'test-key', from: 'sender@example.com' },
+    'user@example.com',
+    '001234',
+    'id',
+    async (url, init) => {
+      assert.equal(url, 'https://api.smtp2go.com/v3/email/send');
+      assert.equal(
+        new Headers(init?.headers).get('X-Smtp2go-Api-Key'),
+        'test-key',
+      );
+      const body = JSON.parse(init?.body as string);
+      assert.equal(body.sender, 'sender@example.com');
+      assert.deepEqual(body.to, ['user@example.com']);
+      assert.match(body.text_body, /001234/);
+      assert.equal(body.fastaccept, false);
+      return Response.json({ data: { succeeded: 1, failed: 0, failures: [] } });
+    },
+  );
+});
+void test('SMTP2GO rejects HTTP errors, quota failures, malformed and ambiguous success responses', async () => {
+  for (const response of [
+    new Response('private details', { status: 429 }),
+    Response.json({ data: { succeeded: 0, failed: 1, failures: ['quota'] } }),
+    Response.json({ data: { error: 'invalid key' } }),
+    Response.json({
+      data: { succeeded: 1, failed: 0, failures: ['rejected'] },
+    }),
+    Response.json({}),
+    new Response('not json'),
+  ]) {
+    await assert.rejects(
+      sendCode(
+        { provider: 'smtp2go', apiKey: 'test', from: 'sender@example.com' },
+        'user@example.com',
+        '123456',
+        'id',
+        async () => response,
+      ),
+      /Email delivery failed/,
+    );
+  }
 });

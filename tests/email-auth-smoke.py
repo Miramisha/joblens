@@ -38,6 +38,7 @@ assert verify(cookie,origin='https://evil.test')[0]==403
 assert verify('')[0]==400
 assert verify('joblens_challenge='+'a'*43)[0]==400
 session_cookie=login(cookie)
+with database() as db:assert db.execute("SELECT COUNT(*) FROM email_challenges WHERE email=?",(email,)).fetchone()[0]==0
 assert verify(cookie)[0]==400
 assert req('/api/jobs',cookie=session_cookie)[0]==200
 assert email in req('/account',cookie=session_cookie)[2]
@@ -53,7 +54,8 @@ assert req('/api/auth/logout',{},second_session+'; '+pending)[0]==303
 assert verify(pending)[0]==400
 assert req('/api/jobs',cookie=second_session)[0]==401
 assert req('/api/jobs',cookie=session(owner,expires=int(time.time())-10))[0]==401
-cookie,_=challenge(expired=True);assert verify(cookie)[0]==400
+cookie,expired_email=challenge(expired=True);assert verify(cookie)[0]==400
+with database() as db:assert db.execute("SELECT COUNT(*) FROM email_challenges WHERE email=?",(expired_email,)).fetchone()[0]==0
 cookie,_=challenge()
 for _ in range(5):assert verify(cookie,'999999')[0]==400
 assert verify(cookie)[0]==400

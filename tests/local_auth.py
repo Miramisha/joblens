@@ -28,5 +28,5 @@ def challenge(email=None, code='123456', expired=False, attempts=0):
     token=secrets.token_urlsafe(32); hashed=digest(token)
     signature=hmac.new(TEST_SECRET.encode(),(hashed+':'+code).encode(),hashlib.sha256).hexdigest()
     with database() as db:
-        db.execute('INSERT OR REPLACE INTO email_challenges VALUES (?,?,?,?,?,?,0)',(email,hashed,signature,int(time.time())+(-1 if expired else 600),int(time.time()),attempts))
+        db.execute('INSERT OR REPLACE INTO email_challenges VALUES (?,?,?,?,?,?,0)',(email,hashed,signature,int(time.time())+(-1 if expired else 300),int(time.time()),attempts))
     return 'joblens_challenge='+token,email

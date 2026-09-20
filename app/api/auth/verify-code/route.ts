@@ -26,15 +26,28 @@ export async function POST(request: Request) {
     const db = getDb(),
       now = Math.floor(Date.now() / 1000),
       challenge = await digest(token);
-    // One statement both charges an attempt and consumes a matching code.
-    // A concurrent verification cannot consume this challenge twice.
-    const result = await db
-      .prepare(
-        `UPDATE email_challenges SET attempts=attempts+1,consumed=CASE WHEN code_hash=? THEN 1 ELSE 0 END WHERE challenge_hash=? AND consumed=0 AND attempts<5 AND expires_at>? RETURNING email,consumed`,
-      )
-      .bind(await codeHash(settings.secret, challenge, code), challenge, now)
-      .first<{ email: string; consumed: number }>();
-    if (!result?.consumed)
+    // D1 batch is transactional: charge the attempt and delete the successful
+    // challenge together, so concurrent requests cannot reuse it.
+    const [, , deleted] = await db.batch([
+      db.prepare('DELETE FROM email_challenges WHERE expires_at<=?').bind(now),
+      db
+        .prepare(
+          `UPDATE email_challenges SET attempts=attempts+1,consumed=CASE WHEN code_hash=? THEN 1 ELSE 0 END WHERE challenge_hash=? AND consumed=0 AND attempts<5 AND expires_at>?`,
+        )
+        .bind(await codeHash(settings.secret, challenge, code), challenge, now),
+      db
+        .prepare(
+          'DELETE FROM email_challenges WHERE challenge_hash=? AND consumed=1 AND attempts>0 AND expires_at>? RETURNING email',
+        )
+        .bind(challenge, now),
+      db
+        .prepare(
+          'DELETE FROM email_challenges WHERE challenge_hash=? AND attempts>=5',
+        )
+        .bind(challenge),
+    ]);
+    const result = deleted.results[0] as { email: string } | undefined;
+    if (!result)
       return json(
         'Код неверный, истёк или исчерпаны 5 попыток. Проверьте код или запросите новый.',
         400,

@@ -134,7 +134,7 @@ export default function EmailLogin({ configured }: { configured: boolean }) {
       {sent && (
         <>
           <small>
-            Код действует 10 минут. Если письма нет, проверь папку «Спам».
+            Код действует 5 минут. Если письма нет, проверь папку «Спам».
           </small>
           <div className="email-login-actions">
             <button

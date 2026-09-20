@@ -2,6 +2,8 @@ declare namespace Cloudflare {
   interface Env {
     DB: D1Database;
     AUTH_SECRET?: string;
+    EMAIL_PROVIDER?: string;
+    SMTP2GO_API_KEY?: string;
     RESEND_API_KEY?: string;
     EMAIL_FROM?: string;
     HH_CLIENT_ID?: string;
