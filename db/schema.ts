@@ -16,6 +16,7 @@ export const jobs = sqliteTable(
 export const accounts = sqliteTable('accounts', {
   ownerId: text('owner_id').primaryKey(),
   displayName: text('display_name').notNull(),
+  skills: text('skills').notNull().default(''),
   hhAttempt: text('hh_attempt'),
   createdAt: text('created_at').notNull(),
 });

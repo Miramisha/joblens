@@ -1,4 +1,6 @@
 'use client';
+import { compareSkills, compareCoverage } from '@/lib/skill-match';
+import { SkillMatch } from '@/components/joblens/skill-match';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { CSVTransfer } from '@/components/joblens/csv-transfer';
@@ -96,7 +98,13 @@ function StageSelect({
     </Select>
   );
 }
-export default function Workspace({ signedIn }: { signedIn: boolean }) {
+export default function Workspace({
+  signedIn,
+  initialSkills = '',
+}: {
+  signedIn: boolean;
+  initialSkills?: string;
+}) {
   const [jobs, setJobs] = useState<Job[]>([]),
     [demo, setDemo] = useState(!signedIn),
     [loaded, setLoaded] = useState(false),
@@ -130,11 +138,13 @@ export default function Workspace({ signedIn }: { signedIn: boolean }) {
   }
   const [view, setView] = useState('board'),
     [query, setQuery] = useState(''),
+    [sortByMatch, setSortByMatch] = useState(false),
     [filter, setFilter] = useState('all');
   const [open, setOpen] = useState(false),
     [editing, setEditing] = useState<Job | null>(null),
     [form, setForm] = useState<JobInput>({ ...blank }),
     [skillText, setSkillText] = useState(''),
+    [personalSkills, setPersonalSkills] = useState(initialSkills),
     [saving, setSaving] = useState(false),
     [formError, setFormError] = useState(''),
     [confirmDelete, setConfirmDelete] = useState(false);
@@ -397,6 +407,13 @@ export default function Workspace({ signedIn }: { signedIn: boolean }) {
     return () => life.abort();
   }, []);
   const all = analytics(jobs);
+  const activeSkills = (signedIn && !demo ? initialSkills : personalSkills)
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const coverage = new Map(
+    jobs.map((job) => [job.id, compareSkills(job.skills, activeSkills)]),
+  );
   const matches = jobs.filter(
     (j) =>
       (filter === 'all' || j.stage === filter) &&
@@ -405,6 +422,10 @@ export default function Workspace({ signedIn }: { signedIn: boolean }) {
         .toLowerCase()
         .includes(query.toLowerCase().trim()),
   );
+  if (sortByMatch && activeSkills.length)
+    matches.sort((a, b) =>
+      compareCoverage(coverage.get(a.id)!, coverage.get(b.id)!),
+    );
   const today = new Date();
   const localDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   const upcoming = jobs
@@ -530,6 +551,27 @@ export default function Workspace({ signedIn }: { signedIn: boolean }) {
                     </button>
                   )}
                 </div>
+                <Select
+                  value={sortByMatch ? 'match' : 'default'}
+                  onValueChange={(value) => setSortByMatch(value === 'match')}
+                  items={[
+                    { value: 'default', label: 'Обычный порядок' },
+                    { value: 'match', label: 'Сначала больше совпадений' },
+                  ]}
+                >
+                  <SelectTrigger
+                    aria-label="Сортировка вакансий"
+                    className="stage-select"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="default">Обычный порядок</SelectItem>
+                    <SelectItem value="match" disabled={!activeSkills.length}>
+                      Сначала больше совпадений
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
                 <StageSelect
                   all
                   value={filter}
@@ -740,6 +782,13 @@ export default function Workspace({ signedIn }: { signedIn: boolean }) {
                                     <span>+{job.skills.length - 3}</span>
                                   )}
                                 </div>
+                                <p className="card-skill-match">
+                                  {!coverage.get(job.id)!.total
+                                    ? 'Недостаточно данных'
+                                    : !activeSkills.length
+                                      ? 'Укажи свои навыки для сравнения'
+                                      : `Совпало ${coverage.get(job.id)!.matched.length} из ${coverage.get(job.id)!.total} навыков · ${coverage.get(job.id)!.percent}%`}
+                                </p>
                                 <footer>
                                   {job.nextActionDate ? (
                                     <span
@@ -1052,6 +1101,12 @@ export default function Workspace({ signedIn }: { signedIn: boolean }) {
                 description={form.description}
                 skills={skillText}
                 onApply={setSkillText}
+              />
+              <SkillMatch
+                skills={skillText}
+                personal={signedIn && !demo ? initialSkills : personalSkills}
+                fromProfile={signedIn && !demo}
+                onChange={setPersonalSkills}
               />
               <label>
                 Мои заметки

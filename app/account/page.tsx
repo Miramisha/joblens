@@ -37,7 +37,11 @@ export default async function Account({
         <EmailLogin configured={!!getAuthSettings()} />
       </main>
     );
-  let account: null | { display_name: string; created_at: string } = null,
+  let account: null | {
+      display_name: string;
+      skills: string;
+      created_at: string;
+    } = null,
     connection: null | {
       display_name: string;
       connected_at: string;
@@ -49,10 +53,10 @@ export default async function Account({
     [account, connection] = await Promise.all([
       db
         .prepare(
-          'SELECT display_name,created_at FROM accounts WHERE owner_id=?',
+          'SELECT display_name,skills,created_at FROM accounts WHERE owner_id=?',
         )
         .bind(user.userId)
-        .first<{ display_name: string; created_at: string }>(),
+        .first<{ display_name: string; skills: string; created_at: string }>(),
       db
         .prepare(
           'SELECT display_name,connected_at,expires_at FROM hh_connections WHERE owner_id=?',
@@ -90,6 +94,7 @@ export default async function Account({
       ) : (
         <AccountPanel
           initialName={account?.display_name ?? user.displayName}
+          initialSkills={account?.skills ?? ''}
           email={user.email}
           registered={!!account}
           connection={connection}

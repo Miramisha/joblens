@@ -1650,3 +1650,40 @@ h1 > span {
 .csv-preview td:nth-child(3) {
   min-width: 120px;
 }
+
+.card-skill-match {
+  margin: 12px 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #52617b;
+  overflow-wrap: anywhere;
+}
+.toolbar-right {
+  flex-wrap: wrap;
+}
+
+.resume-skills {
+  margin: 20px 0;
+}
+.resume-skills summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+.resume-skills p {
+  line-height: 1.5;
+}
+.resume-fields {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.resume-fields textarea {
+  width: 100%;
+  min-height: 140px;
+  resize: vertical;
+  font: inherit;
+  padding: 12px;
+  border: 1px solid #dce1ea;
+  border-radius: 8px;
+}

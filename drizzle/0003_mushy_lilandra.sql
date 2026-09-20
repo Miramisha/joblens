@@ -1,0 +1,1 @@
+ALTER TABLE `accounts` ADD `skills` text DEFAULT '' NOT NULL;

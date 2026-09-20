@@ -1,4 +1,5 @@
 'use client';
+import { SkillSuggestions } from '@/components/joblens/skill-suggestions';
 import { useState } from 'react';
 import Link from 'next/link';
 import { UserRound, Link2, ShieldCheck } from 'lucide-react';
@@ -11,11 +12,13 @@ import {
 } from '@/components/ui/alert-dialog';
 export default function AccountPanel({
   initialName,
+  initialSkills,
   email,
   registered,
   connection,
 }: {
   initialName: string;
+  initialSkills: string;
   email: string;
   registered: boolean;
   connection: {
@@ -25,6 +28,9 @@ export default function AccountPanel({
   } | null;
 }) {
   const [name, setName] = useState(initialName.slice(0, 80)),
+    [resume, setResume] = useState(''),
+    [resumeVersion, setResumeVersion] = useState(0),
+    [skills, setSkills] = useState(initialSkills),
     [exists, setExists] = useState(registered),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(''),
@@ -39,7 +45,7 @@ export default function AccountPanel({
       const response = await fetch('/api/account', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ displayName: name }),
+        body: JSON.stringify({ displayName: name, skills }),
       });
       const data = (await response.json()) as { error?: string };
       if (!response.ok) throw Error(data.error);
@@ -80,6 +86,63 @@ export default function AccountPanel({
               disabled={busy}
             />
           </label>
+          <label className="account-field">
+            Мои навыки через запятую
+            <input
+              value={skills}
+              maxLength={1800}
+              disabled={busy}
+              placeholder="JavaScript, React, Git"
+              onChange={(event) => {
+                setSkills(event.target.value);
+                setSaved(false);
+              }}
+            />
+          </label>
+          <p>
+            Навыки сохраняются в профиле и используются для сравнения с
+            вакансиями.
+          </p>
+          <details className="resume-skills">
+            <summary>Заполнить навыки из резюме</summary>
+            <p>
+              Текст обрабатывается в браузере и не отправляется на сервер. В
+              профиль сохраняются только выбранные навыки.
+            </p>
+            <fieldset disabled={busy} className="resume-fields">
+              <label className="account-field">
+                Текст резюме
+                <textarea
+                  value={resume}
+                  maxLength={20000}
+                  rows={6}
+                  placeholder="Вставь раздел об опыте и навыках"
+                  onChange={(event) => setResume(event.target.value)}
+                />
+              </label>
+              <SkillSuggestions
+                key={resumeVersion}
+                source="resume"
+                description={resume}
+                skills={skills}
+                onApply={(value) => {
+                  setSkills(value);
+                  setSaved(false);
+                }}
+              />
+              <button
+                type="button"
+                className="text-button"
+                disabled={!resume}
+                onClick={() => {
+                  setResume('');
+                  setResumeVersion((value) => value + 1);
+                }}
+              >
+                Очистить текст резюме
+              </button>
+            </fieldset>
+          </details>
           <div className="account-email">
             <span>Аккаунт для входа</span>
             <strong>{email}</strong>
@@ -97,7 +160,7 @@ export default function AccountPanel({
             {busy
               ? 'Сохраняем…'
               : exists
-                ? 'Сохранить имя'
+                ? 'Сохранить профиль'
                 : 'Создать профиль JobLens'}
           </button>
         </form>

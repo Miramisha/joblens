@@ -15,7 +15,7 @@
     "db:generate": "drizzle-kit generate",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
     "typecheck": "tsc --noEmit",
-    "db:init:local": "wrangler d1 execute DB --local --config wrangler.local.json --persist-to .wrangler/state --file drizzle/0000_conscious_hammerhead.sql && wrangler d1 execute DB --local --config wrangler.local.json --persist-to .wrangler/state --file drizzle/0001_fantastic_hawkeye.sql && wrangler d1 execute DB --local --config wrangler.local.json --persist-to .wrangler/state --file drizzle/0002_loving_alex_power.sql",
+    "db:init:local": "wrangler d1 execute DB --local --config wrangler.local.json --persist-to .wrangler/state --file drizzle/0000_conscious_hammerhead.sql && wrangler d1 execute DB --local --config wrangler.local.json --persist-to .wrangler/state --file drizzle/0001_fantastic_hawkeye.sql && wrangler d1 execute DB --local --config wrangler.local.json --persist-to .wrangler/state --file drizzle/0002_loving_alex_power.sql && wrangler d1 execute DB --local --config wrangler.local.json --persist-to .wrangler/state --file drizzle/0003_mushy_lilandra.sql",
     "test:api:server": "wrangler dev --config dist/server/wrangler.json --port 3001 --persist-to .wrangler/hh-test-state",
     "test:api": "python3 tests/api-smoke.py"
   },

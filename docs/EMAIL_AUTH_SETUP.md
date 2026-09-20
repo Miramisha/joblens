@@ -28,7 +28,7 @@
 
 `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm build`.
 
-Интеграционные тесты запускаются только против localhost:3001 с отдельной базой `.wrangler/hh-test-state`. Примените к ней все три миграции через `wrangler d1 execute DB --local --config wrangler.local.json --persist-to .wrangler/hh-test-state --file <migration.sql>`. Затем запустите собранный Worker:
+Интеграционные тесты запускаются только против localhost:3001 с отдельной базой `.wrangler/hh-test-state`. Примените к ней все SQL-миграции из drizzle/ через `wrangler d1 execute DB --local --config wrangler.local.json --persist-to .wrangler/hh-test-state --file <migration.sql>`. Затем запустите собранный Worker:
 
 ```
 pnpm exec wrangler dev --config dist/server/wrangler.json --port 3001 --persist-to .wrangler/hh-test-state --var AUTH_SECRET:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA --var RESEND_API_KEY:test-not-a-real-key --var EMAIL_FROM:test@example.test --var HH_CLIENT_ID:test-client --var HH_CLIENT_SECRET:test-secret --var HH_REDIRECT_URI:http://localhost:3001/api/hh/callback --var HH_USER_AGENT:JobLens-test --var TOKEN_ENCRYPTION_KEY:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA

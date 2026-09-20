@@ -13,11 +13,15 @@ export function SkillSuggestions({
   description,
   skills,
   onApply,
+  source = 'vacancy',
 }: {
+  source?: 'vacancy' | 'resume';
   description: string;
   skills: string;
   onApply: (skills: string) => void;
 }) {
+  const isResume = source === 'resume';
+  const title = isResume ? 'Навыки из резюме' : 'Навыки из описания';
   const groupId = useId();
   const [analysis, setAnalysis] = useState<{
     text: string;
@@ -56,17 +60,17 @@ export function SkillSuggestions({
       setSelected([]);
       setError('');
       setMessage(
-        `Добавлено навыков: ${chosen.length}. Сохрани карточку, чтобы оставить изменения.`,
+        `Добавлено навыков: ${chosen.length}. Сохрани ${isResume ? 'профиль' : 'карточку'}, чтобы оставить изменения.`,
       );
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Не удалось добавить навыки.');
     }
   }
   return (
-    <section className="skill-suggestions" aria-label="Навыки из описания">
+    <section className="skill-suggestions" aria-label={title}>
       <div className="suggestions-heading">
         <div>
-          <h3>Навыки из описания</h3>
+          <h3>{title}</h3>
           <p>Найди упоминания технологий и выбери подходящие.</p>
         </div>
         <button
@@ -81,12 +85,14 @@ export function SkillSuggestions({
       </div>
       {!description.trim() && (
         <p className="suggestions-help">
-          Сначала вставь текст в поле «Описание вакансии».
+          {isResume
+            ? 'Вставь текст резюме в поле выше.'
+            : 'Сначала вставь текст в поле «Описание вакансии».'}
         </p>
       )}
       {stale ? (
         <output className="suggestions-help">
-          Описание изменилось. Нажми «Найти заново», чтобы обновить предложения.
+          Текст изменился. Нажми «Найти заново», чтобы обновить предложения.
         </output>
       ) : (
         analysis && (
@@ -94,8 +100,9 @@ export function SkillSuggestions({
             {suggestions.length ? (
               <>
                 <p className="suggestions-help">
-                  Это упоминания в тексте, а не оценка требований. Проверь
-                  контекст: технология может быть необязательной.
+                  {isResume
+                    ? 'Выбери технологии, которыми владеешь. Упоминание в резюме само по себе не подтверждает навык.'
+                    : 'Это упоминания в тексте, а не оценка требований. Проверь контекст: технология может быть необязательной.'}
                 </p>
                 <div className="suggestion-list">
                   {suggestions.map((item) => (
@@ -154,7 +161,7 @@ export function SkillSuggestions({
             ) : (
               <output className="suggestions-help">
                 {analysis.mentions.length
-                  ? 'Все найденные навыки уже есть в карточке.'
+                  ? `Все найденные навыки уже есть ${isResume ? 'в профиле' : 'в карточке'}.`
                   : 'Знакомых технологий не найдено. Навыки можно указать вручную.'}
               </output>
             )}

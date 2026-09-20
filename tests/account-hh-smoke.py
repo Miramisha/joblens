@@ -44,3 +44,16 @@ assert req('/api/hh/vacancies?q=x')[0]==400
 assert req('/api/hh/vacancies?url=https%3A%2F%2Flocalhost%2Fvacancy%2F1')[0]==400
 assert req('/api/hh/vacancies?q=frontend&page=-1')[0]==400
 print('PASS: profile, ownership, CSRF, retired OAuth, disconnect, vacancy query validation and SSRF rejection')
+
+assert req('/api/account','POST',{'displayName':owner,'skills':'React, TypeScript, React'})[0]==200
+assert 'React, TypeScript' in req('/account')[2]
+assert 'React, TypeScript' not in req('/account',user=other)[2]
+assert req('/api/account','POST',{'displayName':owner})[0]==200
+with database() as db:
+    assert db.execute('SELECT skills FROM accounts WHERE owner_id=?',(owner,)).fetchone()[0]=='React, TypeScript'
+assert req('/api/account','POST',{'displayName':owner,'skills':[]})[0]==400
+assert req('/api/account','POST',{'displayName':owner,'skills':'x'*1801})[0]==400
+assert req('/api/account','POST',{'displayName':owner,'skills':''})[0]==200
+with database() as db:
+    assert db.execute('SELECT skills FROM accounts WHERE owner_id=?',(owner,)).fetchone()[0]==''
+print('PASS: profile skills persistence, ownership, validation, clearing and name-only compatibility')
