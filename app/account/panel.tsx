@@ -1,5 +1,6 @@
 'use client';
 import { SkillSuggestions } from '@/components/joblens/skill-suggestions';
+import DeleteAccount from './delete-account';
 import { useState } from 'react';
 import Link from 'next/link';
 import { UserRound, Link2, ShieldCheck } from 'lucide-react';
@@ -198,6 +199,7 @@ export default function AccountPanel({
           Личные вакансии и заметки доступны только в твоём аккаунте.
         </p>
       </section>
+      <DeleteAccount email={email} />
       <AlertDialog open={confirm} onOpenChange={setConfirm}>
         <AlertDialogContent>
           <AlertDialogTitle>Отключить hh.ru?</AlertDialogTitle>

@@ -24,7 +24,7 @@ const messages: Record<string, string> = {
 export default async function Account({
   searchParams,
 }: {
-  searchParams: Promise<{ hh?: string }>;
+  searchParams: Promise<{ hh?: string; deleted?: string }>;
 }) {
   const user = await getUser();
   const params = await searchParams;
@@ -34,6 +34,11 @@ export default async function Account({
         <Link className="account-back" href="/">
           JobLens
         </Link>
+        {params.deleted === '1' && (
+          <p className="account-success" role="status">
+            Аккаунт удалён из JobLens.
+          </p>
+        )}
         <EmailLogin configured={!!getAuthSettings()} />
       </main>
     );
