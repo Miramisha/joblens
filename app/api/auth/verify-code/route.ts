@@ -26,25 +26,17 @@ export async function POST(request: Request) {
     const db = getDb(),
       now = Math.floor(Date.now() / 1000),
       challenge = await digest(token);
-    // D1 batch is transactional: charge the attempt and delete the successful
-    // challenge together, so concurrent requests cannot reuse it.
-    const [, , deleted] = await db.batch([
+    // Atomically delete only a valid matching challenge; failed attempts are
+    // charged to any remaining active challenge in the same transaction.
+    const [, deleted] = await db.batch([
       db.prepare('DELETE FROM email_challenges WHERE expires_at<=?').bind(now),
-      db
-        .prepare(
-          `UPDATE email_challenges SET attempts=attempts+1,consumed=CASE WHEN code_hash=? THEN 1 ELSE 0 END WHERE challenge_hash=? AND consumed=0 AND attempts<5 AND expires_at>?`,
-        )
-        .bind(await codeHash(settings.secret, challenge, code), challenge, now),
-      db
-        .prepare(
-          'DELETE FROM email_challenges WHERE challenge_hash=? AND consumed=1 AND attempts>0 AND expires_at>? RETURNING email',
-        )
-        .bind(challenge, now),
-      db
-        .prepare(
-          'DELETE FROM email_challenges WHERE challenge_hash=? AND attempts>=5',
-        )
-        .bind(challenge),
+      db.prepare(
+        'DELETE FROM email_challenges WHERE challenge_hash=? AND code_hash=? AND consumed=0 AND attempts<5 AND expires_at>? RETURNING email',
+      ).bind(challenge, await codeHash(settings.secret, challenge, code), now),
+      db.prepare(
+        'UPDATE email_challenges SET attempts=attempts+1 WHERE challenge_hash=? AND consumed=0 AND attempts<5 AND expires_at>?',
+      ).bind(challenge, now),
+      db.prepare('DELETE FROM email_challenges WHERE challenge_hash=? AND attempts>=5').bind(challenge),
     ]);
     const result = deleted.results[0] as { email: string } | undefined;
     if (!result)

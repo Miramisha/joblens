@@ -50,6 +50,7 @@ second_session=login(cookie)
 with database() as db:assert db.execute('SELECT owner_id FROM email_identities WHERE email=?',(email,)).fetchone()[0]==owner
 assert req('/api/auth/logout',{},second_session,origin='https://evil.test')[0]==403
 pending,_=challenge()
+assert verify(pending,"999999")[0]==400
 assert req('/api/auth/logout',{},second_session+'; '+pending)[0]==303
 assert verify(pending)[0]==400
 assert req('/api/jobs',cookie=second_session)[0]==401
@@ -62,6 +63,10 @@ assert verify(cookie)[0]==400
 cookie,_=challenge()
 with ThreadPoolExecutor(max_workers=2) as pool:statuses=list(pool.map(lambda _:verify(cookie)[0],range(2)))
 assert sorted(statuses)==[200,400],statuses
+# Previously revoked rows must never authenticate, even with the correct code.
+revoked,email=challenge(attempts=1)
+with database() as db:db.execute('UPDATE email_challenges SET consumed=1 WHERE email=?',(email,))
+assert verify(revoked)[0]==400
 # Resending invalidates the old browser challenge immediately.
 old,email=challenge();new,_=challenge(email)
 assert verify(old)[0]==400

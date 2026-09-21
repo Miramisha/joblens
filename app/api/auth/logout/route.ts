@@ -14,7 +14,7 @@ export async function POST(request: Request) {
       .prepare('DELETE FROM auth_sessions WHERE token_hash=?')
       .bind(token ? await digest(token) : ''),
     getDb()
-      .prepare('UPDATE email_challenges SET consumed=1 WHERE challenge_hash=?')
+      .prepare('DELETE FROM email_challenges WHERE challenge_hash=?')
       .bind(challenge ? await digest(challenge) : ''),
   ]);
   const headers = new Headers({
