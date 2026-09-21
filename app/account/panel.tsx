@@ -1,5 +1,6 @@
 'use client';
 import { SkillSuggestions } from '@/components/joblens/skill-suggestions';
+import ExportAccount from './export-account';
 import DeleteAccount from './delete-account';
 import { useState } from 'react';
 import Link from 'next/link';
@@ -199,6 +200,7 @@ export default function AccountPanel({
           Личные вакансии и заметки доступны только в твоём аккаунте.
         </p>
       </section>
+      <ExportAccount />
       <DeleteAccount email={email} />
       <AlertDialog open={confirm} onOpenChange={setConfirm}>
         <AlertDialogContent>
