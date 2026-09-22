@@ -1,4 +1,5 @@
 import type { MailSettings } from './mail';
+import { normalizeEmail } from './security';
 import { env } from 'cloudflare:workers';
 import { validEncryptionKey } from '@/lib/hh/security';
 export function getAuthSettings(): (MailSettings & { secret: string }) | null {
@@ -20,4 +21,8 @@ export function getAuthSettings(): (MailSettings & { secret: string }) | null {
     apiKey,
     from: env.EMAIL_FROM,
   };
+}
+
+export function allowedLoginEmail(): string | null {
+  return normalizeEmail(env.ALLOWED_LOGIN_EMAIL);
 }

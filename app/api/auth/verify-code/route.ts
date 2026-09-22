@@ -1,5 +1,5 @@
 import { getDb } from '@/db';
-import { getAuthSettings } from '@/lib/auth/runtime';
+import { getAuthSettings, allowedLoginEmail } from '@/lib/auth/runtime';
 import { authCookie, codeHash, readCookie } from '@/lib/auth/security';
 import { digest, randomSecret, sameOrigin } from '@/lib/hh/security';
 import { smallJson } from '@/lib/request-body';
@@ -12,6 +12,8 @@ export async function POST(request: Request) {
   if (!sameOrigin(request)) return json('Недопустимый источник запроса.', 403);
   const settings = getAuthSettings();
   if (!settings) return json('Вход по почте пока не настроен.', 503);
+  const allowedEmail = allowedLoginEmail();
+  if (!allowedEmail) return json('Вход пока не настроен.', 503);
   let code: unknown;
   try {
     code = ((await smallJson(request)) as { code?: unknown }).code;
@@ -30,13 +32,26 @@ export async function POST(request: Request) {
     // charged to any remaining active challenge in the same transaction.
     const [, deleted] = await db.batch([
       db.prepare('DELETE FROM email_challenges WHERE expires_at<=?').bind(now),
-      db.prepare(
-        'DELETE FROM email_challenges WHERE challenge_hash=? AND code_hash=? AND consumed=0 AND attempts<5 AND expires_at>? RETURNING email',
-      ).bind(challenge, await codeHash(settings.secret, challenge, code), now),
-      db.prepare(
-        'UPDATE email_challenges SET attempts=attempts+1 WHERE challenge_hash=? AND consumed=0 AND attempts<5 AND expires_at>?',
-      ).bind(challenge, now),
-      db.prepare('DELETE FROM email_challenges WHERE challenge_hash=? AND attempts>=5').bind(challenge),
+      db
+        .prepare(
+          'DELETE FROM email_challenges WHERE challenge_hash=? AND code_hash=? AND consumed=0 AND attempts<5 AND expires_at>? AND email=? RETURNING email',
+        )
+        .bind(
+          challenge,
+          await codeHash(settings.secret, challenge, code),
+          now,
+          allowedEmail,
+        ),
+      db
+        .prepare(
+          'UPDATE email_challenges SET attempts=attempts+1 WHERE challenge_hash=? AND consumed=0 AND attempts<5 AND expires_at>?',
+        )
+        .bind(challenge, now),
+      db
+        .prepare(
+          'DELETE FROM email_challenges WHERE challenge_hash=? AND attempts>=5',
+        )
+        .bind(challenge),
     ]);
     const result = deleted.results[0] as { email: string } | undefined;
     if (!result)

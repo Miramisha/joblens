@@ -43,3 +43,6 @@ jobs:
 
       - name: Build production bundle
         run: pnpm build
+
+      - name: Test account isolation, backup and authentication
+        run: python3 tests/run-integration.py

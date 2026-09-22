@@ -1,5 +1,6 @@
 'use client';
 import { SkillSuggestions } from '@/components/joblens/skill-suggestions';
+import RestoreAccount from './restore-account';
 import ExportAccount from './export-account';
 import DeleteAccount from './delete-account';
 import { useState } from 'react';
@@ -201,6 +202,7 @@ export default function AccountPanel({
         </p>
       </section>
       <ExportAccount />
+      <RestoreAccount email={email} />
       <DeleteAccount email={email} />
       <AlertDialog open={confirm} onOpenChange={setConfirm}>
         <AlertDialogContent>

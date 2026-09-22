@@ -31,8 +31,10 @@ with database() as db:
     db.execute('INSERT OR REPLACE INTO auth_limits VALUES (?,?,?)',('email:'+digest(email),5,int(time.time())+3600))
 assert req('/api/auth/send-code',{'email':email})[0]==429
 with database() as db:db.execute('INSERT OR REPLACE INTO auth_limits VALUES (?,?,?)',('global',200,int(time.time())+3600))
-assert req('/api/auth/send-code',{'email':'limit@example.test'})[0]==429
+assert req('/api/auth/send-code',{'email':email})[0]==429
 with database() as db:db.execute('DELETE FROM auth_limits WHERE bucket=?',('global',))
+blocked,_=challenge('blocked@example.test');assert verify(blocked)[0]==400
+assert req('/api/auth/send-code',{'email':'blocked@example.test'})[0]==403
 cookie,email=challenge()
 assert verify(cookie,origin='https://evil.test')[0]==403
 assert verify('')[0]==400

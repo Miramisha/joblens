@@ -1,5 +1,5 @@
 import { getDb } from '@/db';
-import { getAuthSettings } from '@/lib/auth/runtime';
+import { getAuthSettings, allowedLoginEmail } from '@/lib/auth/runtime';
 import {
   authCookie,
   codeHash,
@@ -28,6 +28,8 @@ export async function POST(request: Request) {
     return json('Укажите корректный email.', 400);
   }
   if (!email) return json('Укажите корректный email.', 400);
+  if (!allowedLoginEmail() || email !== allowedLoginEmail())
+    return json('Регистрация пока доступна только владельцу сайта.', 403);
   try {
     const db = getDb();
     const now = Math.floor(Date.now() / 1000);

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { getUser } from '@/app/auth';
-import { getAuthSettings } from '@/lib/auth/runtime';
+import { getAuthSettings, allowedLoginEmail } from '@/lib/auth/runtime';
 import EmailLogin from './email-login';
 import { getDb } from '@/db';
 import AccountPanel from './panel';
@@ -35,11 +35,11 @@ export default async function Account({
           JobLens
         </Link>
         {params.deleted === '1' && (
-          <p className="account-success" role="status">
+          <output className="account-success">
             Аккаунт удалён из JobLens.
-          </p>
+          </output>
         )}
-        <EmailLogin configured={!!getAuthSettings()} />
+        <EmailLogin configured={!!getAuthSettings() && !!allowedLoginEmail()} />
       </main>
     );
   let account: null | {
