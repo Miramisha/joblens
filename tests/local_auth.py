@@ -12,6 +12,13 @@ from pathlib import Path
 TEST_SECRET = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
 def digest(value):
     return base64.urlsafe_b64encode(hashlib.sha256(value.encode()).digest()).decode().rstrip('=')
+class FixtureConnection(sqlite3.Connection):
+    def __exit__(self, *args):
+        try:
+            return super().__exit__(*args)
+        finally:
+            self.close()
+
 def database():
     root=Path(__file__).resolve().parents[1]
     state=Path(os.environ.get('JOBLENS_TEST_STATE', str(root/'.wrangler/hh-test-state'))).resolve()
@@ -19,7 +26,7 @@ def database():
     files=list((state/'v3/d1').rglob('*.sqlite'))
     files=[f for f in files if f.name!='metadata.sqlite']
     assert len(files)==1, 'Initialize the isolated test DB first'
-    return sqlite3.connect(files[0],timeout=10)
+    return sqlite3.connect(files[0],timeout=10,factory=FixtureConnection)
 def session(owner, expires=None):
     token=secrets.token_urlsafe(32)
     with database() as db:

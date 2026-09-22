@@ -1,0 +1,58 @@
+name: JobLens operations
+on:
+  workflow_dispatch:
+  schedule:
+    # Hourly to limit private-repository runner usage; scheduling can be delayed.
+    - cron: '17 * * * *'
+permissions:
+  contents: read
+  issues: write
+concurrency:
+  group: joblens-operations
+  cancel-in-progress: false
+jobs:
+  maintenance:
+    if: vars.JOBLENS_OPERATIONS_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check database and remove expired records
+        id: cleanup
+        env:
+          MAINTENANCE_SECRET: ${{ secrets.JOBLENS_MAINTENANCE_SECRET }}
+        run: node scripts/operations.mjs
+      - name: Download encrypted owner backup
+        id: backup
+        if: always()
+        env:
+          BACKUP_SECRET: ${{ secrets.JOBLENS_BACKUP_SECRET }}
+        run: node scripts/operations.mjs backup
+      - uses: actions/upload-artifact@v4
+        id: upload
+        if: always() && steps.backup.outcome == 'success'
+        with:
+          name: joblens-backup-${{ github.run_id }}
+          path: joblens-backup.encrypted.json
+          retention-days: 7
+          if-no-files-found: error
+      - name: Open one incident or resolve it after recovery
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          OWNER: ${{ github.repository_owner }}
+          FAILED: ${{ steps.cleanup.outcome != 'success' || steps.backup.outcome != 'success' || steps.upload.outcome != 'success' }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          title='JobLens: operational checks require attention'
+          number=$(gh issue list --state open --search "$title in:title" --json number,title --jq '.[] | select(.title == "JobLens: operational checks require attention") | .number' | head -1)
+          if [ "$FAILED" = true ]; then
+            if [ -z "$number" ]; then
+              gh issue create --assignee "$OWNER" --title "$title" --body "A health, cleanup, or encrypted backup check failed. See $RUN_URL. No personal data or secrets are included in this incident."
+            fi
+          elif [ -n "$number" ]; then
+            gh issue close "$number" --comment "Health, cleanup and backup checks have recovered. See $RUN_URL."
+          fi

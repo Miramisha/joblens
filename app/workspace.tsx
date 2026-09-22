@@ -2,7 +2,7 @@
 import { compareSkills, compareCoverage } from '@/lib/skill-match';
 import { SkillMatch } from '@/components/joblens/skill-match';
 import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
+import Link from '@/components/joblens/site-link';
 import { CSVTransfer } from '@/components/joblens/csv-transfer';
 import { JobInsights } from '@/components/joblens/job-insights';
 import { HHSearch } from '@/components/joblens/hh-search';

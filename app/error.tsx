@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import Link from '@/components/joblens/site-link';
 import { useEffect } from 'react';
 
 export default function ErrorPage({

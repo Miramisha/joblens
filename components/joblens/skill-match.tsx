@@ -1,5 +1,5 @@
 'use client';
-import Link from 'next/link';
+import Link from '@/components/joblens/site-link';
 import { compareSkills } from '@/lib/skill-match';
 
 export function SkillMatch({

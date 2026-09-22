@@ -4,7 +4,7 @@ import RestoreAccount from './restore-account';
 import ExportAccount from './export-account';
 import DeleteAccount from './delete-account';
 import { useState } from 'react';
-import Link from 'next/link';
+import Link from '@/components/joblens/site-link';
 import { UserRound, Link2, ShieldCheck } from 'lucide-react';
 import {
   AlertDialog,

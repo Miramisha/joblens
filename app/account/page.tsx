@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '@/components/joblens/site-link';
 import { getUser } from '@/app/auth';
 import { getAuthSettings, allowedLoginEmail } from '@/lib/auth/runtime';
 import EmailLogin from './email-login';
