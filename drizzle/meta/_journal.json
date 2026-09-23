@@ -29,6 +29,20 @@
       "when": 1789396357876,
       "tag": "0003_mushy_lilandra",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1790164987346,
+      "tag": "0004_review_integrity",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1790165538781,
+      "tag": "0005_owner_guard",
+      "breakpoints": true
     }
   ]
 }

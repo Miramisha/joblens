@@ -46,3 +46,27 @@ void test('backup rejects another owner, future version, duplicate IDs and inval
   assert.throws(() => parseBackup(url, email));
   assert.throws(() => parseBackup(null, email));
 });
+
+void test('accepts 101 jobs and long histories, keeps canonical identity across generations', () => {
+  const data = backup();
+  const row = data.jobs[0];
+  data.jobs = Array.from({ length: 101 }, (_, i) => ({
+    ...row,
+    id: `job-${i}`,
+  }));
+  data.jobs[0].history = Array.from({ length: 1001 }, () => row.history[0]);
+  const parsed = parseBackup(data, email);
+  assert.equal(parsed.jobs.length, 101);
+  assert.equal(parsed.jobs[0].history.length, 1001);
+  const restored = { ...parsed.jobs[0], id: 'restore-owner-specific' };
+  assert.equal(
+    parseBackup({ ...data, jobs: [restored] }, email).jobs[0].sourceId,
+    'job-0',
+  );
+  assert.throws(() =>
+    parseBackup(
+      { ...data, jobs: [restored, { ...restored, id: 'other-id' }] },
+      email,
+    ),
+  );
+});

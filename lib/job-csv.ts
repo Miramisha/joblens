@@ -50,7 +50,9 @@ export function duplicateKey(job: JobInput): string {
         if (id) return 'hh:' + id;
       }
       url.hash = '';
-      for (const key of url.searchParams.keys())
+      // Snapshot keys: deleting from the live iterator skips adjacent parameters.
+      // oxlint-disable-next-line unicorn/no-useless-spread
+      for (const key of [...url.searchParams.keys()])
         if (key.startsWith('utm_')) url.searchParams.delete(key);
       return 'url:' + url.toString();
     } catch {

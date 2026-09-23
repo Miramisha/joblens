@@ -28,9 +28,11 @@ export function parseBackup(value: unknown, email: string) {
     profile.skills.length > 1800
   )
     throw Error('Некорректный профиль.');
-  if (!Array.isArray(data.jobs) || data.jobs.length > 100)
-    throw Error('Можно восстановить до 100 вакансий за один раз.');
+  if (!Array.isArray(data.jobs)) throw Error('Некорректный список вакансий.');
+  if (new TextEncoder().encode(JSON.stringify(value)).length > BACKUP_LIMIT)
+    throw Error('Копия должна быть не больше 5 МБ.');
   const ids = new Set<string>();
+  const sourceIds = new Set<string>();
   const jobs = data.jobs.map((raw): Job => {
     const job = raw as Job;
     const input = validateJob(raw);
@@ -41,8 +43,17 @@ export function parseBackup(value: unknown, email: string) {
       ids.has(job.id)
     )
       throw Error('Некорректные или повторяющиеся идентификаторы вакансий.');
+    const sourceId = job.sourceId ?? job.id;
+    if (
+      typeof sourceId !== 'string' ||
+      !sourceId ||
+      sourceId.length > 150 ||
+      sourceIds.has(sourceId)
+    )
+      throw Error('Некорректные или повторяющиеся исходные идентификаторы.');
     ids.add(job.id);
-    if (!Array.isArray(job.history) || job.history.length > 1000)
+    sourceIds.add(sourceId);
+    if (!Array.isArray(job.history))
       throw Error('Некорректная история вакансии.');
     const history = job.history.map((h) => {
       if (
@@ -57,6 +68,7 @@ export function parseBackup(value: unknown, email: string) {
     return {
       ...input,
       id: job.id,
+      sourceId,
       revision: 1,
       createdAt: date(job.createdAt),
       updatedAt: date(job.updatedAt),

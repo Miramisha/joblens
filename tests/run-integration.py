@@ -46,7 +46,7 @@ with tempfile.TemporaryFile() as logs:
             time.sleep(0.5)
         else:
             raise RuntimeError('Test Worker did not become ready')
-        for name in ['email-auth-smoke.py', 'account-export-smoke.py', 'account-restore-smoke.py', 'scheduled-backup-smoke.py', 'account-lifecycle-smoke.py', 'account-delete-smoke.py', 'maintenance-smoke.py', 'api-smoke.py']:
+        for name in ['email-auth-smoke.py', 'account-export-smoke.py', 'account-restore-smoke.py', 'scheduled-backup-smoke.py', 'account-lifecycle-smoke.py', 'account-delete-smoke.py', 'maintenance-smoke.py', 'api-smoke.py', 'review-regressions-smoke.py', 'deletion-race-smoke.py']:
             subprocess.run([sys.executable, str(ROOT / 'tests' / name)], env=env, check=True)
     except Exception:
         logs.seek(0)

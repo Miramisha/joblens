@@ -53,51 +53,72 @@ export function analyzeSkillContext(
     boundaries.push(match.index + match[0].length);
   boundaries.push(text.length);
   const results = new Map<string, ContextResult>();
-  for (const mention of mentions) {
-    const end =
-      boundaries.find((boundary) => boundary >= mention.end) ?? text.length;
-    const start =
-      boundaries.filter((boundary) => boundary <= mention.start).at(-1) ?? 0;
-    const excerpt = text.slice(start, end);
-    const nearby = mentions.filter(
-      (other) => other.start >= start && other.end <= end,
-    );
-    const fs = contextFeatures(
-      excerpt,
-      mention.start - start,
-      mention.end - start,
-    );
-    const informative = fs.filter(
-      (f) => !f.includes('targetskill') && Object.hasOwn(weights.required, f),
-    );
-    const reason =
-      excerpt.length > 500
+  // Mentions are sorted by the extractor. Walk each segment and mention once.
+  let segment = 0;
+  let index = 0;
+  while (index < mentions.length) {
+    const first = mentions[index];
+    while (
+      segment + 1 < boundaries.length &&
+      boundaries[segment + 1] <= first.start
+    )
+      segment++;
+    const start = boundaries[segment];
+    const end = boundaries[segment + 1] ?? text.length;
+    let next = index + 1;
+    while (next < mentions.length && mentions[next].end <= end) next++;
+    const excerpt = text.slice(start, end).trim();
+    let reason: string | undefined =
+      end - start > 500
         ? 'Слишком длинный фрагмент.'
-        : nearby.length > 1
+        : next - index > 1
           ? 'Несколько упоминаний в одном фрагменте: проверь требования вручную.'
-          : new Set(informative).size < 2
-            ? 'Недостаточно знакомого модели контекста.'
-            : undefined;
+          : undefined;
+    if (!reason) {
+      const fs = contextFeatures(
+        text.slice(start, end),
+        first.start - start,
+        first.end - start,
+      );
+      const informative = new Set(
+        fs.filter(
+          (f) =>
+            !f.includes('targetskill') && Object.hasOwn(weights.required, f),
+        ),
+      );
+      if (informative.size < 2)
+        reason = 'Недостаточно знакомого модели контекста.';
+    }
     const label = reason
       ? 'review'
-      : predictContext(excerpt, mention.start - start, mention.end - start);
-    const previous = results.get(mention.name);
-    if (previous) {
-      if (!previous.excerpts.includes(excerpt.trim()))
-        previous.excerpts.push(excerpt.trim());
-      if (previous.label !== label) {
-        previous.label = 'review';
-        previous.reason =
-          'Повторные упоминания дают разные результаты. Проверь весь контекст.';
-      }
-    } else
-      results.set(mention.name, {
-        name: mention.name,
-        label,
-        reason,
-        excerpts: [excerpt.trim()],
-        owned: owned.has(skillKey(mention.name)),
-      });
+      : predictContext(
+          text.slice(start, end),
+          first.start - start,
+          first.end - start,
+        );
+    const names = new Set<string>();
+    for (const mention of mentions.slice(index, next)) {
+      if (names.has(mention.name)) continue;
+      names.add(mention.name);
+      const previous = results.get(mention.name);
+      if (previous) {
+        if (!previous.excerpts.includes(excerpt.trim()))
+          previous.excerpts.push(excerpt.trim());
+        if (previous.label !== label) {
+          previous.label = 'review';
+          previous.reason =
+            'Повторные упоминания дают разные результаты. Проверь весь контекст.';
+        }
+      } else
+        results.set(mention.name, {
+          name: mention.name,
+          label,
+          reason,
+          excerpts: [excerpt.trim()],
+          owned: owned.has(skillKey(mention.name)),
+        });
+    }
+    index = next;
   }
   return [...results.values()];
 }

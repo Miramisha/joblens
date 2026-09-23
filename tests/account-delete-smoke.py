@@ -6,7 +6,7 @@ a='delete-'+secrets.token_hex(8); b='keep-'+secrets.token_hex(8)
 with database() as db:
     for owner in [a,b]:
         db.execute('INSERT INTO accounts(owner_id,display_name,created_at) VALUES (?,?,?)',(owner,owner,'test'))
-        db.execute('INSERT INTO jobs VALUES (?,?,?,?,?)',(owner,owner,'{}',1,'test'))
+        db.execute('INSERT INTO jobs(id,owner_id,payload,revision,updated_at) VALUES (?,?,?,?,?)',(owner,owner,'{}',1,'test'))
 cookie=session(a); second=session(a); other=session(b)
 challenge(a+'@example.test')
 with database() as db:

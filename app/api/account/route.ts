@@ -17,7 +17,7 @@ export async function POST(request: Request) {
   let name: string;
   let skills: string | undefined;
   try {
-    const data = (await smallJson(request)) as {
+    const data = (await smallJson(request, 16_384)) as {
       displayName?: unknown;
       skills?: unknown;
     };
@@ -50,20 +50,24 @@ export async function POST(request: Request) {
     );
   }
   try {
-    if (skills !== undefined) {
-      await getDb()
-        .prepare(
-          'INSERT INTO accounts (owner_id, display_name, skills, created_at) VALUES (?, ?, ?, ?) ON CONFLICT(owner_id) DO UPDATE SET display_name = excluded.display_name, skills = excluded.skills',
-        )
-        .bind(user.userId, name, skills, new Date().toISOString())
-        .run();
-    } else
-      await getDb()
-        .prepare(
-          'INSERT INTO accounts (owner_id, display_name, created_at) VALUES (?, ?, ?) ON CONFLICT(owner_id) DO UPDATE SET display_name = excluded.display_name',
-        )
-        .bind(user.userId, name, new Date().toISOString())
-        .run();
+    // The account is created only by verified login, never by a late save.
+    const result =
+      skills !== undefined
+        ? await getDb()
+            .prepare(
+              'UPDATE accounts SET display_name=?,skills=? WHERE owner_id=?',
+            )
+            .bind(name, skills, user.userId)
+            .run()
+        : await getDb()
+            .prepare('UPDATE accounts SET display_name=? WHERE owner_id=?')
+            .bind(name, user.userId)
+            .run();
+    if (!result.meta.changes)
+      return Response.json(
+        { error: 'Аккаунт удалён. Войдите снова.' },
+        { status: 401, headers: { 'Cache-Control': 'no-store' } },
+      );
     return Response.json(
       { ok: true },
       { headers: { 'Cache-Control': 'no-store' } },

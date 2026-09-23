@@ -43,3 +43,13 @@ void test('keeps technology dots, aliases, Unicode offsets and private skill com
   assert.deepEqual(analyzeSkillContext('Без упоминаний технологий', ''), []);
   assert.throws(() => analyzeSkillContext('x'.repeat(20001), ''));
 });
+
+void test('large repeated fragments stay bounded and produce one review result', () => {
+  const start = performance.now();
+  const result = analyzeSkillContext('React '.repeat(3333), 'React');
+  assert.equal(result.length, 1);
+  assert.equal(result[0].label, 'review');
+  assert.equal(result[0].excerpts.length, 1);
+  // Broad guard against the old quadratic full-fragment tokenization (~1s locally).
+  assert.ok(performance.now() - start < 1000);
+});

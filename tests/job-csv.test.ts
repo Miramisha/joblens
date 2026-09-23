@@ -1,7 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { blank } from '../lib/jobs.ts';
-import { exportCSV, parseCSV, previewCSV } from '../lib/job-csv.ts';
+import {
+  exportCSV,
+  parseCSV,
+  previewCSV,
+  duplicateKey,
+} from '../lib/job-csv.ts';
 const job = {
   ...blank,
   company: 'Компания; "А"',
@@ -62,4 +67,18 @@ void test('preview marks existing and intra-file duplicates without changing dat
     rows.map((r) => r.duplicate),
     [true, false, true],
   );
+});
+
+void test('all adjacent and repeated UTM parameters are removed', () => {
+  const original = {
+    ...blank,
+    company: 'Example',
+    title: 'Engineer',
+    url: 'https://example.test/job?id=7',
+  };
+  const tracked = {
+    ...original,
+    url: 'https://example.test/job?utm_source=a&utm_medium=b&utm_campaign=c&id=7&utm_source=d#top',
+  };
+  assert.equal(duplicateKey(original), duplicateKey(tracked));
 });

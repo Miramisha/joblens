@@ -29,6 +29,7 @@ export type JobInput = {
 };
 export type Job = JobInput & {
   id: string;
+  sourceId?: string;
   revision: number;
   createdAt: string;
   updatedAt: string;

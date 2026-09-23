@@ -7,7 +7,7 @@ history=[{'at':'2026-09-01','stage':'saved','action':'Добавлена'},{'at'
 with database() as db:
     for owner in [a,b]:
         db.execute('INSERT INTO accounts(owner_id,display_name,skills,created_at) VALUES (?,?,?,?)',(owner,owner,'React, Go','test'))
-        db.execute('INSERT INTO jobs VALUES (?,?,?,?,?)',(owner,owner,json.dumps({'title':owner,'notes':'Заметка','history':history}),1,'test'))
+        db.execute('INSERT INTO jobs(id,owner_id,payload,revision,updated_at) VALUES (?,?,?,?,?)',(owner,owner,json.dumps({'title':owner,'notes':'Заметка','history':history}),1,'test'))
     db.execute('INSERT INTO hh_connections VALUES (?,?,?,?,?,?)',(a,a,'HH profile','DO-NOT-EXPORT-SECRET',9999999999,'test'))
 cookie=session(a)
 def request(cookie=''):

@@ -1,7 +1,8 @@
+import { storageLimit, STORAGE_LIMIT_MESSAGE } from '@/lib/storage-budget';
 import { getUser } from '@/app/auth';
 import { getDb } from '@/db';
 import { smallJson } from '@/lib/request-body';
-import { sameOrigin, digest } from '@/lib/hh/security';
+import { sameOrigin } from '@/lib/hh/security';
 import { CSV_BYTES, duplicateKey, previewCSV } from '@/lib/job-csv';
 import type { Job } from '@/lib/jobs';
 const json = (data: unknown, status = 200) =>
@@ -65,7 +66,7 @@ export async function POST(request: Request) {
       inputs.map(
         async (input): Promise<Job> => ({
           ...input,
-          id: 'csv-' + (await digest(user.userId + ':' + duplicateKey(input))),
+          id: crypto.randomUUID(),
           revision: 1,
           createdAt: at,
           updatedAt: at,
@@ -75,19 +76,35 @@ export async function POST(request: Request) {
         }),
       ),
     );
-    // D1 batch is atomic; deterministic IDs make concurrent/retried imports idempotent.
+    // Atomic insert checks current identity, which every write refreshes.
     const results = await db.batch(
       jobs.map((job) =>
         db
           .prepare(
-            'INSERT OR IGNORE INTO jobs (id,owner_id,payload,revision,updated_at) VALUES (?,?,?,?,?)',
+            'INSERT INTO jobs (id,owner_id,payload,revision,updated_at,duplicate_key) SELECT ?,?,?,?,?,? WHERE NOT EXISTS (SELECT 1 FROM jobs WHERE owner_id=? AND duplicate_key=?)',
           )
-          .bind(job.id, user.userId, JSON.stringify(job), 1, at),
+          .bind(
+            job.id,
+            user.userId,
+            JSON.stringify(job),
+            1,
+            at,
+            duplicateKey(job),
+            user.userId,
+            duplicateKey(job),
+          ),
       ),
     );
     const imported = results.reduce((sum, r) => sum + r.meta.changes, 0);
     return json({ imported, skipped: preview.length - imported });
-  } catch {
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      (error.message.includes('joblens_owner_deleted') ||
+        String(error.cause).includes('joblens_owner_deleted'))
+    )
+      return json({ error: 'Аккаунт удалён. Войдите снова.' }, 401);
+    if (storageLimit(error)) return json({ error: STORAGE_LIMIT_MESSAGE }, 413);
     return json(
       {
         error:

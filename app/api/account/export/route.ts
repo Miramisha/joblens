@@ -55,7 +55,7 @@ export async function GET() {
         connectedAt: row.connected_at,
       })),
     };
-    return new Response(JSON.stringify(data, null, 2), {
+    return new Response(JSON.stringify(data), {
       headers: {
         ...headers,
         'Content-Type': 'application/json; charset=utf-8',

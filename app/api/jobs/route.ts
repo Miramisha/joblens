@@ -1,3 +1,5 @@
+import { duplicateKey } from '@/lib/job-csv';
+import { storageLimit, STORAGE_LIMIT_MESSAGE } from '@/lib/storage-budget';
 import { getUser } from '@/app/auth';
 import { getDb } from '@/db';
 import { blank, validateJob, type Job } from '@/lib/jobs';
@@ -25,6 +27,13 @@ async function run(
   try {
     return await action(user.userId);
   } catch (error) {
+    if (
+      error instanceof Error &&
+      (error.message.includes('joblens_owner_deleted') ||
+        String(error.cause).includes('joblens_owner_deleted'))
+    )
+      return json({ error: 'Аккаунт удалён. Войдите снова.' }, 401);
+    if (storageLimit(error)) return json({ error: STORAGE_LIMIT_MESSAGE }, 413);
     console.error(
       'JobLens request failed',
       error instanceof Error ? error.message : 'unknown',
@@ -95,9 +104,9 @@ export async function POST(request: Request) {
     };
     await getDb()
       .prepare(
-        'INSERT INTO jobs (id, owner_id, payload, revision, updated_at) VALUES (?, ?, ?, ?, ?)',
+        'INSERT INTO jobs (id, owner_id, payload, revision, updated_at, duplicate_key) VALUES (?, ?, ?, ?, ?, ?)',
       )
-      .bind(job.id, owner, JSON.stringify(job), 1, at)
+      .bind(job.id, owner, JSON.stringify(job), 1, at, duplicateKey(job))
       .run();
     return json({ job }, 201);
   });
@@ -149,9 +158,17 @@ export async function PUT(request: Request) {
     };
     const result = await db
       .prepare(
-        'UPDATE jobs SET payload = ?, revision = ?, updated_at = ? WHERE id = ? AND owner_id = ? AND revision = ?',
+        'UPDATE jobs SET payload = ?, revision = ?, updated_at = ?, duplicate_key = ? WHERE id = ? AND owner_id = ? AND revision = ?',
       )
-      .bind(JSON.stringify(job), job.revision, at, old.id, owner, old.revision)
+      .bind(
+        JSON.stringify(job),
+        job.revision,
+        at,
+        duplicateKey(job),
+        old.id,
+        owner,
+        old.revision,
+      )
       .run();
     if (!result.meta.changes)
       return json({ error: 'Вакансия уже изменена. Обновите доску.' }, 409);

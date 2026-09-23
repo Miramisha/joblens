@@ -5,11 +5,13 @@ export const jobs = sqliteTable(
     id: text('id').primaryKey(),
     ownerId: text('owner_id').notNull(),
     payload: text('payload').notNull(),
+    duplicateKey: text('duplicate_key'),
     revision: integer('revision').notNull().default(1),
     updatedAt: text('updated_at').notNull(),
   },
   (table) => [
     index('idx_jobs_owner_updated').on(table.ownerId, table.updatedAt),
+    index('idx_jobs_owner_duplicate').on(table.ownerId, table.duplicateKey),
   ],
 );
 
