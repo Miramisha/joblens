@@ -17,7 +17,9 @@ def request(cookie, email, origin=BASE):
     req=urllib.request.Request(BASE+'/api/account/delete',data=json.dumps({'email':email,'confirmation':'DELETE','ownerId':b}).encode(),headers={'Cookie':cookie,'Origin':origin,'Content-Type':'application/json'},method='POST')
     try:
         with urllib.request.urlopen(req) as r:return r.status,r.headers
-    except urllib.error.HTTPError as r:return r.code,r.headers
+    except urllib.error.HTTPError as r:
+        if r.code >= 500: print('LOCAL HTTP FAILURE',r.code,r.read().decode(errors='replace')[:1200])
+        return r.code,r.headers
 assert request('',a+'@example.test')[0]==401
 assert request(cookie,a+'@example.test','https://evil.test')[0]==403
 status,_=request(cookie,b+'@example.test');assert status==400,status

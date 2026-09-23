@@ -23,7 +23,8 @@ def login(cookie):
     return next(c.split(';')[0] for c in cookies if c.startswith('joblens_session='))
 assert req('/api/jobs',headers={'oai-authenticated-user-id':'forged','oai-authenticated-user-email':'forged@example.test'})[0]==401
 assert req('/api/auth/send-code',{'email':'valid@example.test'},origin='https://evil.test')[0]==403
-assert req('/api/auth/send-code',{'email':'invalid'})[0]==400
+invalid_result=req('/api/auth/send-code',{'email':'invalid'})
+assert invalid_result[0]==400,invalid_result
 # Cooldown and hourly quotas reject before reaching the mail provider.
 cooldown,email=challenge()
 assert req('/api/auth/send-code',{'email':email})[0]==429

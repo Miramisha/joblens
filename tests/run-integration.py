@@ -1,5 +1,8 @@
 """Build first. Runs only the isolated localhost test Worker, never production."""
 import os
+import json
+import urllib.request
+import urllib.error
 import atexit
 from pathlib import Path
 import socket
@@ -26,18 +29,20 @@ env['TEST_BACKUP_PRIVATE_KEY'] = key_path
 for migration in sorted((ROOT / 'drizzle').glob('*.sql')):
     subprocess.run([WRANGLER, 'd1', 'execute', 'DB', '--local', '--config', 'wrangler.local.json', '--persist-to', state.name, '--file', str(migration)], env=env, check=True, stdout=subprocess.DEVNULL)
 # This runner is intended for a fresh isolated database (for example a CI checkout).
-command = [WRANGLER, 'dev', '--config', 'dist/server/wrangler.json', '--port', '3001', '--persist-to', state.name]
-for key, value in {'AUTH_SECRET': 'A'*43, 'RESEND_API_KEY': 'test-not-a-real-key', 'EMAIL_FROM': 'test@example.test', 'ALLOWED_LOGIN_EMAIL': 'owner@example.test', 'MAINTENANCE_SECRET': 'B'*43, 'BACKUP_SECRET': 'D'*43, 'BACKUP_PUBLIC_KEY': public_key}.items():
-    command += ['--var', key+':'+value]
+env['JOBLENS_TEST_VARS'] = json.dumps({'AUTH_SECRET': 'A'*43, 'RESEND_API_KEY': 'test-not-a-real-key', 'EMAIL_PROVIDER': 'resend', 'EMAIL_FROM': 'test@example.test', 'ALLOWED_LOGIN_EMAIL': 'owner@example.test', 'MAINTENANCE_SECRET': 'B'*43, 'BACKUP_SECRET': 'D'*43, 'BACKUP_PUBLIC_KEY': public_key})
+command = ['node', 'tests/start-worker.mjs']
 with tempfile.TemporaryFile() as logs:
     process = subprocess.Popen(command, env=env, stdout=logs, stderr=subprocess.STDOUT)
     try:
         for _ in range(120):
             if process.poll() is not None:
                 raise RuntimeError('Test Worker exited before becoming ready')
-            with socket.socket() as probe:
-                if probe.connect_ex(('127.0.0.1', 3001)) == 0:
-                    break
+            try:
+                with urllib.request.urlopen('http://127.0.0.1:3001/api/health', timeout=1) as response:
+                    if response.status == 200 and json.load(response).get('status') == 'ok':
+                        break
+            except (OSError, urllib.error.URLError, ValueError):
+                pass
             time.sleep(0.5)
         else:
             raise RuntimeError('Test Worker did not become ready')
