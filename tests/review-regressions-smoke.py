@@ -14,6 +14,17 @@ def req(path,body=None,method=None):
 try:
  # UTF-8 byte budget must accommodate the documented character limits.
  assert req('/api/account',{'displayName':'Тест','skills':'Я'*1800})[0]==200
+ # Maximum accepted Unicode fields must remain editable after import.
+ from csv import writer
+ from io import StringIO
+ large={'company':'Компания','title':'Разработчик','description':'界'*20000,'notes':'界'*10000,'skills':json.dumps([str(i)+'界'*58 for i in range(30)],ensure_ascii=False),'nextAction':'界'*500,'location':'界'*160,'salary':'界'*120,'url':'https://example.com/'+'界'*1900}
+ output=StringIO(); csv_writer=writer(output,delimiter=';');csv_writer.writerow(large.keys());csv_writer.writerow(large.values())
+ assert req('/api/jobs/import',{'csv':output.getvalue()})[1]['imported']==1
+ imported=req('/api/jobs')[1]['jobs'][0]
+ status,updated=req('/api/jobs',{**imported,'stage':'applied'},'PUT')
+ assert status==200,(status,updated)
+ assert updated['job']['description']==large['description']
+ assert req('/api/jobs',{'id':updated['job']['id'],'revision':updated['job']['revision']},'DELETE')[0]==200
  csv='company;title\nExample;Engineer'
  assert req('/api/jobs/import',{'csv':csv})[1]['imported']==1
  original=req('/api/jobs')[1]['jobs'][0]

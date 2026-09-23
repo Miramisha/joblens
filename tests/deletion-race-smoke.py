@@ -3,10 +3,13 @@ import http.client,json,secrets,threading,time,urllib.request,sqlite3
 from local_auth import database,session
 BASE='http://localhost:3001'
 inputs=[('/api/account',{'displayName':'Late save','skills':'Go'}),('/api/jobs',{'company':'Late','title':'Late','stage':'saved','location':'','salary':'','url':'','description':'','skills':[],'notes':'','interviewDate':''}),('/api/jobs/import',{'csv':'company;title\nLate;Late'})]
+inputs.append(('/api/account/restore', None))
 for path,payload in inputs:
  owner='race-'+secrets.token_hex(8)
  with database() as db:db.execute('INSERT INTO accounts(owner_id,display_name,created_at) VALUES (?,?,?)',(owner,'Test','2026-01-01'))
  cookie=session(owner)
+ if path=='/api/account/restore':
+  payload={'format':'joblens-account-export','version':1,'profile':{'email':owner+'@example.test','displayName':'Restored','skills':'Go'},'jobs':[]}
  data=json.dumps(payload).encode(); started=threading.Event(); release=threading.Event(); result=[]
  def late_save():
   try:
@@ -34,4 +37,4 @@ for path,payload in inputs:
   try:db.execute('INSERT INTO jobs(id,owner_id,payload,revision,updated_at) VALUES (?,?,?,1,?)',(owner,owner,'{}','2026'))
   except sqlite3.IntegrityError as error:assert 'joblens_owner_deleted' in str(error)
   else:raise AssertionError('Database allowed an orphan job')
-print('PASS: in-flight profile, job and CSV writes cannot survive account deletion; database rejects orphan jobs')
+print('PASS: in-flight profile, job, CSV and restore writes cannot survive account deletion; database rejects orphan jobs')

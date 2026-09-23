@@ -55,6 +55,8 @@ export async function POST(request: Request) {
         .bind(backup.profile.displayName, backup.profile.skills, user.userId),
       ...statements,
     ]);
+    if (!results[0].meta.changes)
+      return json({ error: 'Аккаунт удалён. Войдите снова.' }, 401);
     const imported = results
       .slice(1)
       .reduce((sum, row) => sum + row.meta.changes, 0);

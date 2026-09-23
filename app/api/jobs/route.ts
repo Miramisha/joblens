@@ -55,7 +55,8 @@ async function body(request: Request) {
     const next = await reader.read();
     if (next.done) break;
     size += next.value.length;
-    if (size > 100000) {
+    // Includes UTF-8 and JSON escaping for every accepted field.
+    if (size > 250000) {
       await reader.cancel();
       throw Error('Слишком большой запрос.');
     }
