@@ -1687,3 +1687,98 @@ h1 > span {
   border: 1px solid #dce1ea;
   border-radius: 8px;
 }
+
+.ml-label {
+  display: inline-block;
+  margin: 4px 0;
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: #e5ecfd;
+  font-size: 12px;
+  font-weight: 500;
+}
+.ml-results {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  margin: 16px 0;
+}
+.ml-results li {
+  min-width: 0;
+  padding: 12px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow-wrap: anywhere;
+}
+.ml-result-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 12px;
+}
+.ml-result-heading span {
+  color: #52617b;
+}
+.ml-results p,
+.ml-details p {
+  margin: 8px 0;
+  line-height: 1.6;
+}
+.ml-personal {
+  font-weight: 500;
+}
+.ml-results blockquote {
+  border-left: 2px solid #bacbeb;
+  margin: 10px 0 0;
+  padding-left: 10px;
+  line-height: 1.6;
+  color: #52617b;
+}
+.ml-details summary {
+  cursor: pointer;
+  min-height: 32px;
+  padding-top: 8px;
+}
+.ml-context {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  .ml-context .secondary {
+    width: 100%;
+    white-space: normal;
+    min-height: 44px;
+  }
+}
+
+/* Avoid automatic input zoom on iOS and keep narrow forms usable by touch. */
+@media (max-width: 600px) {
+  .form-fields input,
+  .form-fields textarea,
+  .account-page input,
+  .account-page textarea,
+  .search input {
+    font-size: 16px;
+  }
+  .form-footer {
+    flex-wrap: wrap;
+  }
+  .form-footer button,
+  .dialog-x {
+    min-height: 44px;
+  }
+  .dialog-x {
+    min-width: 44px;
+  }
+}
+
+.account-card label {
+  min-width: 0;
+}
+.account-card input[type='file'] {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}

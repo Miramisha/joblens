@@ -1,4 +1,5 @@
 'use client';
+import { MlSkillContext } from '@/components/joblens/ml-skill-context';
 import { compareSkills, compareCoverage } from '@/lib/skill-match';
 import { SkillMatch } from '@/components/joblens/skill-match';
 import { useEffect, useRef, useState } from 'react';
@@ -1107,6 +1108,10 @@ export default function Workspace({
                 personal={signedIn && !demo ? initialSkills : personalSkills}
                 fromProfile={signedIn && !demo}
                 onChange={setPersonalSkills}
+              />
+              <MlSkillContext
+                description={form.description}
+                personal={signedIn && !demo ? initialSkills : personalSkills}
               />
               <label>
                 Мои заметки

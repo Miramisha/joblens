@@ -102,7 +102,10 @@ export function mergeSkills(existing: string[], additions: string[]): string[] {
     );
   return result;
 }
-export function extractSkills(text: string): SkillMention[] {
+export function extractSkills(
+  text: string,
+  deduplicate = true,
+): SkillMention[] {
   if (typeof text !== 'string' || text.length > 20000)
     throw new Error('Описание должно быть не длиннее 20 000 символов.');
   const candidates: Omit<SkillMention, 'excerpt'>[] = [];
@@ -130,7 +133,7 @@ export function extractSkills(text: string): SkillMention[] {
   for (const candidate of candidates) {
     if (candidate.start < occupiedUntil) continue;
     occupiedUntil = candidate.end;
-    if (seen.has(candidate.name)) continue;
+    if (deduplicate && seen.has(candidate.name)) continue;
     seen.add(candidate.name);
     result.push({
       ...candidate,
